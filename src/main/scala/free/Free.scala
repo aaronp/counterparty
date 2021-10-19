@@ -1,5 +1,6 @@
 package free
 
+
 trait Monad[F[_]]:
   def pure[A](a: A): F[A]
   def flatMap[A, B](fa: F[A], f: A => F[B]): F[B]
@@ -12,7 +13,7 @@ extension[F[_] : Monad, A] (fa: F[A])
 
 trait ~>[F[_], G[_]]:
   def apply[A](fa: F[A]): G[A]
-
+  
 enum Free[F[_], A]:
   case Pure(value: A) extends Free[F, A]
   case Suspend(fa: F[A]) extends Free[F, A]
@@ -33,3 +34,9 @@ enum Free[F[_], A]:
 object Free:
   def pure[F[_], A](a: A): Free[F, A] = Free.Pure(a)
   def liftM[F[_], A](fa: F[A]): Free[F, A] = Free.Suspend(fa)
+
+extension [F[_], A](fa: F[A])
+  def freeM: Free[F, A] = Free.liftM(fa)
+
+extension [A](value : A)
+  def free[F[_]]: Free[F, A] = Free.pure(value)

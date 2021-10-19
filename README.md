@@ -1,8 +1,3 @@
-## sbt project compiled with Scala 3
+# Free Monad w/ Scala 3
 
-### Usage
-
-This is a normal sbt project. You can compile code with `sbt compile`, run it with `sbt run`, and `sbt console` will start a Scala 3 REPL.
-
-For more information on the sbt-dotty plugin, see the
-[dotty-example-project](https://github.com/lampepfl/dotty-example-project/blob/master/README.md).
+This is an example following along from Daniel Spiewak's [Free as in Monads](https://www.youtube.com/watch?v=cxMo1RMsD0M) talk, but implemented in scala 3 with some tests/eample

@@ -10,8 +10,8 @@ case class SearchResult(hits : List[String]):
 sealed trait MyApp[A]
 object MyApp:
   def runUserQuery(hint : String): Free[MyApp, SearchResult] = for {
-    query <- Free.liftM(ReadUserQuery(hint))
-    results <- Free.liftM(RunSearch(query, 10))
+    query <- ReadUserQuery(hint).freeM
+    results <- RunSearch(query, 10).freeM
   } yield results
 
 case class ReadUserQuery(hint : String) extends MyApp[String]

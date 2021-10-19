@@ -14,7 +14,7 @@ object ZioApp extends zio.App {
 
     // our ad-hoc configuration assembled from ... stuff
     object config:
-      val hint = "some user hing"
+      val hint = "some user hint"
       val url = args.headOption.getOrElse("localhost:8080")
       given cnsol : Has[Console] = environment
       given nat : ~>[MyApp, Task] = live(url)
