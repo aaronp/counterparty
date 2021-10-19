@@ -5,7 +5,7 @@ lazy val root = project
   .settings(
     name := "free",
     version := "0.0.1",
-    scalaVersion := "3.0.2",
+    scalaVersion := "3.1.0",
     libraryDependencies ++= List(
 //      "dev.zio" %% "zio" % "1.0.11",
       "dev.zio" %% "zio" % "2.0.0-M2",

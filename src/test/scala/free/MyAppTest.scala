@@ -9,10 +9,6 @@ class MyAppTest extends AnyWordSpec with Matchers {
 
   "MyApp.runUserQuery" should {
     "execute the search with the given user query" in {
-      given Monad[List] with
-        override def pure[A](a: A) = List(a)
-
-        override def flatMap[A, B](fa: List[A], f: A => List[B]) = fa.flatMap(f)
 
       given testTransform: ~>[MyApp, List] with
         def apply[A](app: MyApp[A]): List[A] = app match {
