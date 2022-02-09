@@ -2,6 +2,7 @@ package free.example
 
 opaque type CustId = String
 
+/** Some simple data types */
 object CustId {
   def apply(id: String): CustId = id
 }
@@ -12,22 +13,47 @@ case class UserData(customerId: CustId, isSelfExcluded: Boolean)
 
 
 /**
- * Our vocabulary - the set of all the external operations we need to perform
+ * Our vocabulary - the set of all the external operations we need in our program
  *
  * @tparam A
  */
 sealed trait Operation[A]
 
+/** Check our feature toggles */
 case object GetFeatureFlags extends Operation[FeatureFlags]
-
+/** Log a message. In practice this is also a useful no-op */
 case class Log(message: String) extends Operation[Unit]
-
-case class CheckOpenBet(customerId: CustId) extends Operation[UserData]
-
+/** does what it says on the tin */
+case class GetCustomerById(customerId: CustId) extends Operation[UserData]
+/** check a third-party system (GamStop) */
 case class CheckGamStop(customerId: CustId) extends Operation[Option[UserData]]
-
+/** save a result */
 case class WriteSelfExclusion(customerId: CustId, selfExcluded: Boolean) extends Operation[Unit]
 
+/**
+ * This is our imperative program. It has a relative high cyclomatic complexity - many different branches through the code
+ *
+ * By writing ("lifting") this code into values rather than an imperative style gives us the opportunity to interrogate it/play with it.
+ *
+ * The original, imperative code might've looked something like this:
+ *
+ * {{{
+ *   def myProgram(featureFlags : FeatureFlags, customerId : String) {
+ *     if (featureFlags.isLoadTest) {
+ *       println("load test - ignoring")
+ *     } else {
+ *        val customerStatus = checkGamStop(customerId)
+ *        val isSelfExcluded = (customerStatus != null) && customerStatus.isSelfExcluded
+ *        if (isSelfExcluded) {
+ *          println("customer is self excluded")
+ *        } else {
+ *          val customer = getCustomerById(customerId)
+ *          setSelfExclusionStatus(customerId, customer.isSelfExcluded)
+ *        }
+ *     }
+ *   }
+ * }}}
+ */
 object App {
 
   import free.*
@@ -39,7 +65,7 @@ object App {
     }
 
     def checkOpenBetAndClobberResult: Free[Operation, Unit] = for {
-      openBetUser <- CheckOpenBet(customerId).freeM
+      openBetUser <- GetCustomerById(customerId).freeM
       _ <- WriteSelfExclusion(customerId, openBetUser.isSelfExcluded).freeM
     } yield ()
 

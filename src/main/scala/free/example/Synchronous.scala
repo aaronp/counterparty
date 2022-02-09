@@ -15,13 +15,13 @@ case class HttpResponse(code: Int, body: String)
 
 
 /**
- * This is our 'live' impl for Try
+ * This is a "synchronous" interpreter, using [[Try]] as our Monad
  */
 case class Synchronous(flags: FeatureFlags, httpClient: HttpRequest => HttpResponse) extends ~>[Operation, Try] :
   def apply[A](operation: Operation[A]): Try[A] =
     operation match {
       case GetFeatureFlags => Try(flags)
-      case CheckOpenBet(customerId) => Try {
+      case GetCustomerById(customerId) => Try {
         val response = httpClient(Get("/openBet"))
         UserData(customerId, response.body.contains("selfExcluded"))
       }

@@ -18,7 +18,7 @@ class OpenBestTest extends AnyWordSpec with Matchers {
       def apply[A](operation: Operation[A]): BufferState[A] =
         val logic: Operation[A] => BufferState[A] = testScenario {
           case GetFeatureFlags => FeatureFlags(isLoadTest, true)
-          case CheckOpenBet(customerId) => UserData(customerId, openBetResults)
+          case GetCustomerById(customerId) => UserData(customerId, openBetResults)
           case CheckGamStop(customerId) => gamstopResults.map(flag => UserData(customerId, flag))
         }
         logic(operation)
@@ -30,7 +30,7 @@ class OpenBestTest extends AnyWordSpec with Matchers {
         case Some(true) => "self-excluded"
         case Some(false) => "not self-excluded"
       }
-      s"Given load test is '${if isLoadTest then "on" else "off"}', a user is ${if openBetResults then "" else "not"} self-excluded in OpenBet, and the customer is $gamstopDesc according to gam-stop"
+      s"Given load test is '${if isLoadTest then "on" else "off"}', a user is${if openBetResults then "" else "not"} self-excluded in OpenBet, and the customer is $gamstopDesc according to gam-stop"
     }
 
     // our test...
@@ -53,7 +53,7 @@ class OpenBestTest extends AnyWordSpec with Matchers {
     val handler = (_: Operation[A]) match {
       case op if pf.isDefinedAt(op) => pf(op)
       case GetFeatureFlags => FeatureFlags(false, true)
-      case CheckOpenBet(customerId) => UserData(customerId, false)
+      case GetCustomerById(customerId) => UserData(customerId, false)
       case CheckGamStop(customerId) => Some(UserData(customerId, true))
       case WriteSelfExclusion(_, _) => ()
       case Log(_) => ()
