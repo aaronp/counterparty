@@ -14,7 +14,7 @@ Otherwise if you're impatient, it might help to just think of a Monad as being a
 The "Free" monad offers a way to write programs which, after some initial "eh?" moments, looks and feels similar to how you'd write 
 programs normally, but has the effect of separating the control flow (do this, if that, loop here...) from the execution.
 
-## Where we're going
+## What we're going for - an example
 This code repo shows that you can just write a free monad from scratch with very little code (no heavy libraries) in order to treat your programs as values.
 
 We provide an example use-case you can run in the tests where we take a "gam-stop" gaming program flow and print out what our program would do for every possible input (e.g. a "what-if" scenario)
@@ -38,7 +38,7 @@ Given load test is 'off', a user is self-excluded in OpenBet, and the customer i
 
 This is one of many possibilities available when your programs are represented as a data structure (tree), rather than imperative instructions.
 
-## Tell Me More 
+## How It Works - Imperative vs Functional (e.g. Free Monad) style
 
 So, let's consider this simple program in both an imperative and data-structure (e.g. Free Monad) form:
 
@@ -55,7 +55,7 @@ else
 Everyone will be familiar with that, and all we can do is run it, which will apparently feed a cat and maybe launch some missiles. Yikes.
 In the non-missile-launching case, I guess we'll just print something out. How are we going to test this? Hmmm...
 
-### That program as data
+### The Functional Example - that same program but as data (a tree structure)
 
 We want to represent that flow as a tree data structure, where the nodes of the tree are instances of the "free" monad, which contain the operations we care about (feedTheCat, launchTheMissiles, println).
 
@@ -89,7 +89,7 @@ Anyway, this is what the imperative control flow looks like, but as a for-compre
   } yield ()
 ```
 
-### Running it
+### Actually Running it - how to execute a tree structure of commands?
 That program is now just data - which also means nothing's actually happened. We just have a tree-structure of commands we've called `ourProgramAsAValue` which we can pass around/do things with.
 
 In order to actually __run__ the thing, we'll need some kind of interpreter which can take actions for our made-up `MyProgramCommand[Result]` values.
@@ -106,7 +106,9 @@ operation match {
 ...
 ```
 
-So that'd be our "interpreter". It's worth noting that That target type could be any parameterised type `F[_]`, so long as that type's a Monad (e.g. has a flatMap - Try[_], Future[_], etc)
+So that'd be our "interpreter". It tells us how to run individual commands, and the Free Monad gives us the sequencing/order. 
+
+It's worth noting that That target type could be any parameterised type `F[_]`, so long as that type's a Monad (e.g. has a flatMap - Try[_], Future[_], etc)
 
 We actually run that mapping using an operation on the "Free" monad called `foldMap`. So in this case, we'd convert our Free monad into IO, which is also a lazy data structure, and so we have to then call `unsafeRunSync` for us to actually execute that"
 ```
@@ -127,7 +129,7 @@ trait ~>[F[_], G[_]]:
   def apply[A](fa: F[A]): G[A]
 ```
 
-# Phew! that was a lot. Why did we go to all that trouble?
+# Why did we go to all that trouble? Some Benefits...
 
 That looks like a lot of overhead/extra steps, so why would anyone do this?
 
