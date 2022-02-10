@@ -1,176 +1,28 @@
-# Free Monad w/ Scala 3
+# The Free Monad with Scala 3
 
 This is an example following along from Daniel Spiewak's [Free as in Monads](https://www.youtube.com/watch?v=cxMo1RMsD0M) talk, but implemented in scala 3 with some tests/eample
 
 # What is a Free Monad - what's its purpose?
-Disclaimer: this topic is by definition a bit heavy on jargon.
+Disclaimer: this topic is by definition a bit heavy on jargon. If you're unfamiliar with what a Monad is, it might help to consult many other great resources to learn about that.
 
-## Short Version
- * don't write imperative code, but rather represent your interactions (database calls, user prompts) with data structures (e.g. PromptUser[Int]("pick a number") or WriteData[Unit](bytes : Array[Byte]))
- * use the "Free" monad to then write your control flow using for-comprehensions (e.g. instead of `val x = promptUser("pick a number")` you have `for ( x <- PromptUser("pick a number").freeM) yield x` (where the `.freeM` is some extension method which "lifts" your data structure into the Free monad, allow you to have a flatMap on it)
- * once you have a "Free" monad (`Free[F[_],A]`) version of your for-comprehension program, your program is now actually a value (a tree structure) which you can do whatever you want to it (pass it around, optimise it, run it, whatever).
- * in order to "run" that tree structure, you have to provide an interpretter whch can turn the operations you made up (e.g. `PromptUser[Int]("pick a number")`) into some kind of Monad. 
+### Monad - you can skip this if you know
+Otherwise if you're impatient, it might help to just think of a Monad as being able to provide a sequence (ordering) to some kind of parameterised type (e.g. F[_] is a parameterised type, like List[Boolean], Set[Int], Future[String], etc), and by being able to `flatMap` on that parameterised type implies a sequence of operations, just as imperative programs are written in order - in a sequence. 
 
-In practice, you would have a few "interpreters" - ones which can run "what if" scenarios and just log things, or perhaps ones for testing which just have no-ops for external actions.
 
-To do that, you need a natural transformation (read: instead of your normal `A -> B`, it's a `F[_] -> G[_]`) from your type into a Monad, so something like:
+# Motivation/Purpose
 
+The "Free" monad offers a way to write programs which, after some initial "eh?" moments, looks and feels similar to how you'd write 
+programs normally, but has the effect of separating the control flow (do this, if that, loop here...) from the execution.
+
+## Where we're going
+This code repo shows that you can just write a free monad from scratch with very little code (no heavy libraries) in order to treat your programs as values.
+
+We provide an example use-case you can run in the tests where we take a "gam-stop" gaming program flow and print out what our program would do for every possible input (e.g. a "what-if" scenario)
+
+A snippet of that "what-if" output will look like this, showing what actions our program will take when given different input:
 ```
-    // a cats IO way to actually get input from std-in
-    given~>[PromptUser, cats.IO] with
-      def apply[A](prompt: PromptUser[A]) = IO(println(prompt.text)) *> IO(scala.io.StdIn.readInt())
-```
-
-## Long, drawn-out, wordy version
-The purpose of the "Free" Monad is to be able to be able to treat any unconstrained parameterised type as-if it were a Monad.
-
-If you're not familiar with Monad, scroll down and I clumsily try and explain it (much better learning resources on Monads are available)
-
-But basically "Free" has the encoding:
-```
-  // scala 2
-  sealed trait Free[F[_], A]
-
-  // scala 3
-  enum Free[F[_], A]
-```
-Which has the purpose of taking any unconstrained parameterised type `F[_]` and being able to treat it as a Monad.
-
-## What? Why would you do that?
-Essentially it enables an alternative style of programming which, instead of using imperative statements, you use data structures to represent the operations your program needs to interact with the outside world (user interactions, network calls, database operations, whatever).
-
-This lets you write your program as "values" rather than imperative statements.
-
-Recently I retweeted Thomas Mikula's tweet:
-```
-"Programs as Values" has much more potential than just execute later.
-
-Examples:
-- statically analyze
-- simulate
-- optimize
-- send over network (e.g. deploy to cloud, skipping docker etc.)
-- visualize
-- provide structural editor for
-- generate code from
-- synthesize hardware from
-```
-
-An example is worth a thousand words, so let's consider this"
-
-### The example
-
-Recently I tried to recreate from memory some program a friend asked me to review.
-
-Essentially it had a lot of different branches/paths through the code:
- * checking some feature toggles
- * conditionally calling an 'OpenBet' API
- * making a database call based on the result of that network call
- * writing/caching the results of the database call
-
-The actual code was more involved, but the permutations through it made my brain hurt - in particular because the real example had several nested "x && !y || z" kinds of statements.
-
-So basically, instead of this (somewhat simplified imperative version, assuming some implementations for 'checkGamStop' and 'setSelfExclusionStatus', etc)
-```
-def myProgram(featureFlags : FeatureFlags, customerId : String) : Unit = {
-    if (featureFlags.isLoadTest) {
-        println("load test - ignoring")
-    } else {
-        val customerStatus = checkGamStop(customerId)
-        val isSelfExcluded = (customerStatus != null) && customerStatus.isSelfExcluded
-        if (isSelfExcluded) {
-            println("customer is self excluded")
-        } else {
-            val customer = getCustomerById(customerId)
-            setSelfExclusionStatus(customerId, customer.isSelfExcluded)
-        }
-    }
-}
-```
-
-If we were to use the "Free" monad, we would represent those external calls by using a restricted (sealed) parameterised data structure:
-
-```
-sealed trait Operation[A]
-```
-
-That is, the interactions with the outside world (retrieving feature flags, calling 3rd party systems, writing to the database) are all `Operation[A]`s which can return some type `A`.
-
-In our case, this is what I came up with:
-
-```
-sealed trait Operation[A]
-/** Check our feature toggles */
-case object GetFeatureFlags extends Operation[FeatureFlags]
-/** Log a message. In practice this is also a useful no-op */
-case class Log(message: String) extends Operation[Unit]
-/** does what it says on the tin */
-case class GetCustomerById(customerId: CustId) extends Operation[UserData]
-/** check a third-party system (GamStop) */
-case class CheckGamStop(customerId: CustId) extends Operation[Option[UserData]]
-/** save a result */
-case class WriteSelfExclusion(customerId: CustId, selfExcluded: Boolean) extends Operation[Unit]
-```
-
-So far so good (hopefully). Notice nothing actually does anything -- it's just a data representation of the inputs/outputs we're using.
-
-Now we want to write our control-flow using those data types. This is where the "Free" monad comes in. 
-
-At the moment `Operation[A]` is just something we made up. It doesn't have a `flatMap`, so it's not a `Monad`. And if it's not a Monad, then we can't sequence the operations (e.g. do this and then do that).
-
-That's what "Free" gives us - it allows us to treat `Operation[A]` as if it were a Monad
-
-Because our `Free[F[_], A]` type DOES have a flatMap, we can "lift" our `Operation[A]` type into `Free[Operation, A]`.
-
-In my example code I put some fancy post-fix extension methods to allow me to ultimately write this:
-```
-  def updateUser(customerId: CustId): Free[Operation, Unit] = {
-    def checkGamStop: Free[Operation, Boolean] = CheckGamStop(customerId).freeM.flatMap {
-      case Some(found) => Free.pure(found.isSelfExcluded)
-      case None => Free.pure(false)
-    }
-
-    def checkOpenBetAndClobberResult: Free[Operation, Unit] = for {
-      openBetUser <- GetCustomerById(customerId).freeM
-      _ <- WriteSelfExclusion(customerId, openBetUser.isSelfExcluded).freeM
-    } yield ()
-
-    def checkUser: Free[Operation, Unit] = for {
-      isSelfExcluded <- checkGamStop
-      _ <- if isSelfExcluded then Log(s"User $customerId is already self-excluded").freeM else checkOpenBetAndClobberResult
-    } yield ()
-
-    for {
-      flags <- GetFeatureFlags.freeM
-      _ <- if flags.isLoadTest then Log("Ignoring - load test").freeM else checkUser
-    } yield ()
-  }
-```
-
-That's roughly equivalent to the imperative style, though it does use some inner helper methods for clarity.
-
-Instead of just getting a `Unit` type back though, we now have a `: Free[Operation, Unit]`
-
-All that remains is to the "interpret" our `Free[Operation, Unit]`. The "Free" monad has an operation typically called `foldMap`.
-
-Remember, we currently just have a data representation of our program ("Free" is basically just a directed-graph of instructions - a tree structure which has been built up by using calls of pure, map and flatMap).
-
-`foldMap` allows us to turn that tree structure into "any" other monad `G[_]`, provided there is a "natural transformation" from our made-up parameterised type F[_] to G[_].
-
-That still sounds confusing, so let me try and say it another way:
-
-We've written a control flow using data structures to create a tree of instructions ("pure" this, then "flatMap" that...).
-We're now free to "interpret" (e.g. "run" or "execute") that data structure, just so long as we can turn each of our `Operation[A]`s into some Monad `G[_]` (e.g. Future[_], or Try[_], or more typically IO[_]).
-
-If you download/run this repo (e.g. `sbt test`), you'll see that in the OpenBestTest, I wanted to just print out the "what if" control flow given every possible permutation of inputs.
-
-This was to showcase one example of how we might want to just eye-ball check the correctness of the program.
-
-The sample output includes:
-```
-
 ------------------------------------------------------------------------------------------------------------------------
-Given load test is 'off', a user isnot self-excluded in OpenBet, and the customer is not self-excluded according to gam-stop: 
+Given load test is 'off', a user is not self-excluded in OpenBet, and the customer is not self-excluded according to gam-stop: 
                 GetFeatureFlags returned FeatureFlags(false,true)
                 CheckGamStop(foo) returned Some(UserData(foo,false))
                 GetCustomerById(foo) returned UserData(foo,false)
@@ -182,81 +34,139 @@ Given load test is 'off', a user is self-excluded in OpenBet, and the customer i
                 CheckGamStop(foo) returned Some(UserData(foo,false))
                 GetCustomerById(foo) returned UserData(foo,true)
                 WriteSelfExclusion(foo,true) returned ()
-
-------------------------------------------------------------------------------------------------------------------------
-Given load test is 'off', a user is self-excluded in OpenBet, and the customer is self-excluded according to gam-stop: 
-                GetFeatureFlags returned FeatureFlags(false,true)
-                CheckGamStop(foo) returned Some(UserData(foo,true))
-                Log(User foo is already self-excluded) returned ()
-
 ```
 
-# The 'Free' encoding
-I'm not sure why I'm putting this all in the readme --- just look at the chuffing code. Anyway, in scala3, it looks a bit like this:
+This is one of many possibilities available when your programs are represented as a data structure (tree), rather than imperative instructions.
+
+## Tell Me More 
+
+So, let's consider this simple program in both an imperative and data-structure (e.g. Free Monad) form:
+
+### An Imperative Example
+Here's a program made up of some flow controls (if/else) statements and actions (feedTheCat, launchTheMissiles, println):
 ```
-enum Free[F[_], A]:
-  case Pure(value: A) extends Free[F, A]
-  case Suspend(fa: F[A]) extends Free[F, A]
-  case FlatMap[G[_], In, Out](self: Free[G, In], f: In => Free[G, Out]) extends Free[G, Out]
-
-  final def flatMap[B](f: A => Free[F, B]): Free[F, B] = FlatMap[F, A, B](this, f)
-
-  final def map[B](f: A => B): Free[F, B] = FlatMap[F, A, B](this, a => Free.pure(f(a)))
-
-  final def foldMap[G[_] : Monad](using nt: F ~> G): G[A] = this match {
-    case Pure(value) => Monad[G].pure(value)
-    case Suspend(fa) => nt(fa)
-    case FlatMap(inner, f) =>
-      val ge = inner.foldMap(Monad[G], nt)
-      Monad[G].flatMap(ge, in => f(in).foldMap(Monad[G], nt))
-  }
+val catIsHappy = feedTheCat(catNip, amountInGrams = 100)
+if (!catIsHappy)
+  launchTheMissiles(DateTime.now())
+else
+  println("phew! The cat's all good")
 ```
 
-# More Background: What is a Monad
+Everyone will be familiar with that, and all we can do is run it, which will apparently feed a cat and maybe launch some missiles. Yikes.
+In the non-missile-launching case, I guess we'll just print something out. How are we going to test this? Hmmm...
 
-A "Monad" is just a parameterised type (like List[A], Option[A], Future[A], Set[A], ...) which implements three methods:
- * 'pure': take any type 'A' and put it inside an F[A]. For example, take an 'Int' and make it a List[Int], or Set[Int])
- * 'map': given a function from A -> B, we can then transform F[A] to F[B] (e.g. a List[Int] into a List[String])
- * 'flatMap': given a function from A -> F[B], we can transform an F[A] to and F[B] (as opposed to and F[F[B]]). That is, "flatten" the nested 'F[_]' type 
+### That program as data
 
-The important bit is the "flatMap", which basically has the up-shot of sequencing.
+We want to represent that flow as a tree data structure, where the nodes of the tree are instances of the "free" monad, which contain the operations we care about (feedTheCat, launchTheMissiles, println).
 
-Consider this example:
-
-Let's say I have three different programs (or methods):
+Those operations will have return value associated with them (e.g. feedTheCat return a boolean of whether the cat is happy), so we'll also need to capture the return value types with a type parameter, so let's do that:
 ```
-def getPerson(id : Int) : Result[Person] = ....
-def getManager(person : Person) : Result[Manager] = .... 
-def getName(mgr : Manager) : Result[String] = .... 
-```
+// All of our commands will be of the parameterised type 'MyProgramCommand[ResultType]', where the `ResultType` type parameter
+// is the return type given if that command were to be executed 
+sealed trait MyProgramCommand[ResultType]
 
-If, in my program, I have the value:
-```
-  val somePersonId : Result[Int]
+// when we feed the cat, it returns a boolean signalling if the cat is happy or not
+case class FeedTheCat(food : String, amountInGrams : Int) extends MyProgramCommand[Boolean]
+// launching the missiles doesn't have a return type - it's just a side-effect operation
+case class LaunchTheMissiles(when : DateTime) extends MyProgramCommand[Unit]
+// logging a message also doesn't have a return value, so we just use 'Unit' again as our void return type
+case class Log(message : String) extends MyProgramCommand[Unit]
 ```
 
-then a Monad (e.g. flatMap) will allow me to construct a value just as-if I were writing this imperative program:
-```
-// imperative program
-val personId : Int  ...
-val person = getPerson(personId)
-val manager = getManager(person)
-val name = getName(manager)
+Ok, great. That kind-of looks like it'll capture the operations we care about. How do we turn that into our control-flow - our program?
 
-// monad (flatMap):
-def program(personId : Int) : Result[Name] = {
-  getPerson(personId).flatMap { person =>
-    getManager(person).flatMap { mgr =>
-      getName(mgr)
-    }
-  } 
+We can't just stick them all in a `List[MyProgramCommand[ResultType]]`, right? We need to represent the if-else branches of code.
+
+Enter the free monad, where instead of `List[MyProgramCommand[ResultType]]` we'll have `Free[MyProgramCommand, ResultType]`, which might be easier to think of as `TreeNode[A]` if it were named better (and lost a type parameter).
+
+Anyway, this is what the imperative control flow looks like, but as a for-comprehension:
+```
+// now we can use this for our control flow above. The "Free.liftM" is what puts our MyProgramCommand[A] type inside a node within our tree (the Free Monad)
+// we can use a for-compehension because, even though our MyProgramCommand[ResultType] doesn't have a flatMap, the Free monad does, and it's the free monad which is wrapping our MyProgramCommand values:
+  val ourProgramAsAValue = for {
+    catIsHappy <- Free.liftM(FeedTheCat(catNip, amountInGrams = 100))
+    _ <- if (!catIsHappy) Free.liftM(LaunchTheMissiles(DateTime.now())) else Free.liftM(Log("phew! The cat's all good")
+  } yield ()
+```
+
+### Running it
+That program is now just data - which also means nothing's actually happened. We just have a tree-structure of commands we've called `ourProgramAsAValue` which we can pass around/do things with.
+
+In order to actually __run__ the thing, we'll need some kind of interpreter which can take actions for our made-up `MyProgramCommand[Result]` values.
+
+To cut to the chase, that'll just look like patter-matching our operations to map them onto another (typically executable) type.
+In this case, we're assuming our good friend, the imperative functions 'feedTheCat', 'launchTheMissiles', etc are in scope, and the target type we're going to map onto is [IO from cats effect](https://typelevel.org/cats-effect/):
+```
+...
+operation match {
+  case FeedTheCat(catNip, amountInGrams) => IO(feedTheCat(catNip, amountInGrams)
+  case LaunchTheMissiles(when)           => IO(launchTheMissiles(when))
+  case Log(message)                      => IO(println(message))
 }
-
-// or, using scala's for-comprehension syntactic sugar:
-def program(personId : Int) : Result[Name] = for {
-  person <- getPerson(personId)
-  manager <- getManager(person)
-  name <- getName(manager) 
-} yield name
+...
 ```
 
+So that'd be our "interpreter". It's worth noting that That target type could be any parameterised type `F[_]`, so long as that type's a Monad (e.g. has a flatMap - Try[_], Future[_], etc)
+
+We actually run that mapping using an operation on the "Free" monad called `foldMap`. So in this case, we'd convert our Free monad into IO, which is also a lazy data structure, and so we have to then call `unsafeRunSync` for us to actually execute that"
+```
+  val ourProgramAsAValue : Free[MyProgramCommand, Unit] = ...
+  val programAsIO : IO[Unit] = ourProgramAsAValue.foldMap[IO] // <-- assumes an interpreter is in scope - e.g. our natrual transformation to IO
+  // run it!
+  programAsIO.unsafeRunSync() // <-- actually feed the cat - and maybe launch the missiles!
+```
+
+#### Quick Aside - Natural Transformations
+To do the actual mapping, we use something called a *"natural transformation"*, which is just a way to map one __type__ to another __type__.
+So, instead of a normal __function__ which can turn some value `A` into another value `B`:
+```A => B```
+
+A natural transformation turns the parameterised type `F[_]` into another type `G[_]`, and sometimes is called "NaturalTransformation[F[_], G[_]]", but often has the more cryptic, symbolic name "~>[F[_], G[_]]":
+```
+trait ~>[F[_], G[_]]:
+  def apply[A](fa: F[A]): G[A]
+```
+
+# Phew! that was a lot. Why did we go to all that trouble?
+
+That looks like a lot of overhead/extra steps, so why would anyone do this?
+
+Well, this can be really useful when you have tricky-to-reproduce race-conditions, elaborate/complex control flows, or just economy of scale (e.g. several methods/scenarios which all can make use of a small set of commands/operations).
+
+For example, we might want to interlace different calls to check a race condition, which we can now easily do simply by manipulating or creating the right a tree.  
+### Testing
+We can inspect the operations given different inputs, stub-out operations (maybe we don't actually want to launch missiles in our tests), or even have regression tests on our control flows themselves.
+
+It can also be really useful for negative tests - as opposed to waiting for something NOT to happen, we just assert an instruction doesn't exist, or has a particular value.
+
+### General code manipulations
+Because your program is now data, you can inspect that tree (just pattern-match) and modify it:
+ * squash or batch calls - basically in similar ways to database query planning/optimisers
+ * apply access controls, retry behaviours, parallelization
+ * wrap things with logging/telemetry, retries, metrics, etc
+
+These are the sorts of things which people otherwise have to turn to compiler-plugins or macros to do, like [AOP](https://en.wikipedia.org/wiki/Aspect-oriented_programming).
+
+Instead of having to get into the weeds of your languages internal [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) representation of its instruction set, we've now lifted programs into the user-space.
+
+### What-If or dry-run scenarios
+All sorts of user immediate-feedback things, like "If I put these values into this form, you tell me what you were going to run/execute".
+
+### Code generation
+In this repo, when you run the test we show human-readable output:
+```
+------------------------------------------------------------------------------------------------------------------------
+Given load test is 'off', a user is not self-excluded in OpenBet, and the customer is not self-excluded according to gam-stop: 
+                GetFeatureFlags returned FeatureFlags(false,true)
+                CheckGamStop(foo) returned Some(UserData(foo,false))
+                GetCustomerById(foo) returned UserData(foo,false)
+                WriteSelfExclusion(foo,false) returned ()
+```
+
+But there's nothing to say that can't be structured. We could generate code in another target language, for example. 
+Or our own domain-specific-language.
+
+### Passing around your programs
+Serialising or sharing state, comparing against previous status or other user's states ... the sky is the limit really.
+
+As programmers, we work much better with values, and can do a lot more with them.
