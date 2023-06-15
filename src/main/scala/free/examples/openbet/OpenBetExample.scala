@@ -1,4 +1,4 @@
-package free.example
+package free.examples.openbet
 
 opaque type CustId = String
 

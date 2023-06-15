@@ -1,6 +1,8 @@
-package free.example
+package free.examples.openbet
 
 import free.*
+import _root_.free.examples.{given, *}
+import examples.openbet.{App, CheckGamStop, CustId, FeatureFlags, GetCustomerById, GetFeatureFlags, Log, Operation, UserData, WriteSelfExclusion}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -16,7 +18,7 @@ class OpenBestTest extends AnyWordSpec with Matchers {
      */
     given~>[Operation, BufferState] with
       def apply[A](operation: Operation[A]): BufferState[A] =
-        val logic: Operation[A] => BufferState[A] = testScenario {
+        val logic: Operation[A] => BufferState[A] = makeInterpreter {
           case GetFeatureFlags => FeatureFlags(isLoadTest, true)
           case GetCustomerById(customerId) => UserData(customerId, openBetResults)
           case CheckGamStop(customerId) => gamstopResults.map(flag => UserData(customerId, flag))
@@ -37,7 +39,7 @@ class OpenBestTest extends AnyWordSpec with Matchers {
     testScenarioDescription should {
       "work as expected ;-) with App.updateUser" in {
         val codeUnderTest: Free[Operation, Unit] = App.updateUser(CustId("foo"))
-        
+
         codeUnderTest.foldMap[BufferState] match {
           case State(run) =>
             val (_, testLog) = run(Buffer(Nil))
@@ -49,9 +51,10 @@ class OpenBestTest extends AnyWordSpec with Matchers {
     }
   }
 
-  def testScenario[A](pf: PartialFunction[Operation[A], A]) = {
+  def makeInterpreter[A](pf: PartialFunction[Operation[A], A]): Operation[A] => State[Buffer, A] = {
     val handler = (_: Operation[A]) match {
       case op if pf.isDefinedAt(op) => pf(op)
+      // the default cases:
       case GetFeatureFlags => FeatureFlags(false, true)
       case GetCustomerById(customerId) => UserData(customerId, false)
       case CheckGamStop(customerId) => Some(UserData(customerId, true))

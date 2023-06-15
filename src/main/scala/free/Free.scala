@@ -1,6 +1,7 @@
 package free
 
 import scala.util.Try
+import zio.*
 
 trait Semigroup[A]:
   def combine(a: A, b: A): A
@@ -8,6 +9,13 @@ object Semigroup:
   def apply[A](f : (A, A) => A) = new Semigroup[A] {
     override def combine(a: A, b: A): A = f(a,b)
   }
+
+/**
+ * The state monad
+ * @param run
+ * @tparam S
+ * @tparam A
+ */
 case class State[S, A](run: S => (A, S)):
   def flatMap[B](f: A => State[S, B]): State[S, B] =
     State { s =>
@@ -24,7 +32,7 @@ case class State[S, A](run: S => (A, S)):
 object State:
   def of[S, A](value: A) = State[S, A](in => (value, in))
 
-  def combine[S : Semigroup, A](state: S, value: A) = State[S, A](left => (value, summon[Semigroup[S]].combine(state, left)))
+  def combine[S : Semigroup, A](state: S, value: A): State[S, A] = State[S, A](left => (value, summon[Semigroup[S]].combine(state, left)))
 
   given generic[S]: Monad[[A] =>> State[S, A]] with
     def pure[A](a: A): State[S, A] = State(s => (a, s))
@@ -55,6 +63,12 @@ object Monad:
   given Monad[List] with
     override def pure[A](a: A) = List(a)
     override def flatMap[A, B](fa: List[A], f: A => List[B]) = fa.flatMap(f)
+
+
+  given Monad[Task] with
+    override def pure[A](a: A): Task[A] = ZIO.succeed(a)
+    override def flatMap[A, B](fa: Task[A], f: A => Task[B]): Task[B] = fa.flatMap(f)
+
 
 extension[F[_] : Monad, A] (fa: F[A])
   def flatMap[B](f: A => F[B]): F[B] = summon[Monad[F]].flatMap(fa, f)

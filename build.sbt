@@ -1,3 +1,5 @@
+enablePlugins(ScalaJSPlugin)
+
 import sbt.Keys.testOptions
 
 lazy val root = project
@@ -5,15 +7,17 @@ lazy val root = project
   .settings(
     name := "free",
     version := "0.0.1",
-    scalaVersion := "3.1.0",
+    scalaVersion := "3.3.0",
     libraryDependencies ++= List(
-//      "dev.zio" %% "zio" % "1.0.11",
-      "dev.zio" %% "zio" % "2.0.0-M2",
-      "org.scalatest" %% "scalatest" % "3.2.10" % "test")
+      "dev.zio" %%% "zio" % "2.0.15",
+      "org.scalatest" %%% "scalatest" % "3.2.16" % "test"),
+    libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.5.0",
+    libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.12.0"
   )
 
 ThisBuild / scalacOptions ++= List(
   "-encoding", "UTF-8",
+//  "-explain",
   "-language:implicitConversions"
 )
 
