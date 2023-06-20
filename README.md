@@ -2,6 +2,11 @@
 
 This is an example following along from Daniel Spiewak's [Free as in Monads](https://www.youtube.com/watch?v=cxMo1RMsD0M) talk, but implemented in scala 3 with some tests/eample
 
+## Demo
+The demo showcases an [ETL example](./src/main/scala/free/examples/etl) which debounces and enriches messages.
+
+The demo is an example how your [ETL logic](./src/main/scala/free/examples/etl/Logic.scala) can be tested/use in the browser [here](https://aaronp.github.io/freemonad/). 
+
 # What is a Free Monad - what's its purpose?
 Disclaimer: this topic is by definition a bit heavy on jargon. If you're unfamiliar with what a Monad is, it might help to consult many other great resources to learn about that.
 
