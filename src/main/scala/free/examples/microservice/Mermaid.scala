@@ -1,78 +1,62 @@
 package free.examples.microservice
 
+import _root_.free.examples.microservice.CreateDraftLogic.*
 import _root_.free.examples.{*, given}
 import free.*
-import _root_.free.examples.microservice.CreateDraftLogic.*
 
 import scala.annotation.targetName
 
 @main def generateMermaidDiagram(): Unit = println(Mermaid())
+
 /**
  * Turn an operation into a mermaid diagram
  */
 object Mermaid {
 
-  case class Call(from: String, action :String, result : String) {
-    def asState[A](result: A) = State.combine[Calls, A](this :: Nil, result)
+  object actors {
+    val Svc = "ContractService"
+    val DB = "Database"
+    val CtrPtyA = "CounterpartyA"
+    val CtrPtyB = "CounterpartyB"
+
+    def all = List(Svc, DB, CtrPtyA, CtrPtyB)
+  }
+  type Call = String
+  extension (call: Call) {
+    def asState[A](result: A) = State.combine[Calls, A](call :: Nil, result)
   }
 
   type Calls = List[Call]
-  extension (calls : Calls)
-    def asMermaidDiagram : String = {
-      val participants: List[String] = calls.flatMap {
-        case Call(from, _, to) => List(from, to)
-      }.distinct
-
-      val declarations = participants.sorted.map(p => s"participant $p")
-
-      val flow: List[String] = calls.map {
-        case Call(from, result, to) => s"$from ->> $to: $result"
-      }
-
-      (declarations ++ flow).mkString("\n")
+  extension (calls: Calls)
+    def asMermaidDiagram: String = {
+      (actors.all.map(p => s"participant $p") ++ calls).mkString("\n")
     }
 
   given Semigroup[Calls] with
     def combine(a: Calls, b: Calls) = a ++ b
 
-  def makeInterpreter[A](pf: PartialFunction[CreateDraftLogic[A], A]): CreateDraftLogic[A] => State[Buffer, A] = {
-    val handler = (_: CreateDraftLogic[A]) match {
-      case op if pf.isDefinedAt(op) => pf(op)
-      // the default cases:
-      case StoreDraftInDatabase(draft) => DraftContractId.create()
-      case NotifyCounterpartyA(contract) => CounterpartyRef(s"notified party A of ${contract.id}")
-      case NotifyCounterpartyB(contract) => CounterpartyRef(s"notified party B of ${contract.id}")
-      case LogMessage(msg) => ()
-    }
-
-    (op: CreateDraftLogic[A]) => {
-      handler(op) match {
-        case result: A => State.combine[Buffer, A](Buffer(op, result), result)
-      }
-    }
+  import actors.*
+  def mermaidInterpreter[A]: CreateDraftLogic[A] => State[Calls, A] = (_: CreateDraftLogic[A]) match {
+    case StoreDraftInDatabase(draft) =>
+      val result = DraftContractId.create()
+      s"$Svc ->> $DB".asState(result)
+    case NotifyCounterpartyA(contract) =>
+      val result = CounterpartyRef(s"notified party A of ${contract.id}")
+      s"$Svc ->> $CtrPtyA : notify of ${contract.id}".asState(result)
+    case NotifyCounterpartyB(contract) =>
+      val result = CounterpartyRef(s"notified party B of ${contract.id}")
+      s"$Svc ->> $CtrPtyB : notify of ${contract.id}".asState(result)
+    case LogMessage(msg) =>
+      s"Note right of $Svc : $msg".asState(())
   }
 
-  def mermaidInterpreter[A]: CreateDraftLogic[A] => State[Calls, A] = (_: CreateDraftLogic[A]) match {
-      case StoreDraftInDatabase(draft) =>
-        val result = DraftContractId.create()
-        Call("ContractService", result.toString, "Database").asState(result)
-      case NotifyCounterpartyA(contract) =>
-        val result = CounterpartyRef(s"notified party A of ${contract.id}")
-        Call("ContractService", result.toString, "CounterpartyA").asState(result)
-      case NotifyCounterpartyB(contract) =>
-        val result = CounterpartyRef(s"notified party B of ${contract.id}")
-        Call("ContractService", result.toString, "CounterpartyB").asState(result)
-      case LogMessage(msg) =>
-        Call("ContractService", msg, "Logger").asState(())
-    }
-
   type CallsState[A] = State[Calls, A]
+
   // we need a natural transformation to convert our operation types
   // into a 'BufferState' -- which is something that just keeps a
   // list of the operations called and their responses
   @targetName("createDraftLogicAsBufferState")
   given~>[CreateDraftLogic, CallsState] with
-//    def apply[A](op: CreateDraftLogic[A]): BufferState[A] = makeInterpreter[A](PartialFunction.empty)(op)
     def apply[A](op: CreateDraftLogic[A]): State[Calls, A] = mermaidInterpreter(op)
 
   def exampleContract = DraftContract(
@@ -82,7 +66,7 @@ object Mermaid {
     "the conditions of the contract"
   )
 
-  def apply(draft : DraftContract = exampleContract): String = {
+  def apply(draft: DraftContract = exampleContract): String = {
     val logic = CreateDraftLogic(draft)
 
     // convert our 'Free' (logic) into a buffer (e.g. tree of operations)
