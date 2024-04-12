@@ -1,8 +1,7 @@
+//> using scala "3.3.1"
 package free
 
-
 import scala.util.Try
-import zio.*
 
 trait Semigroup[A]:
   def combine(a: A, b: A): A
@@ -68,10 +67,6 @@ object Monad:
     override def pure[A](a: A) = List(a)
     override def flatMap[A, B](fa: List[A], f: A => List[B]) = fa.flatMap(f)
 
-
-  given Monad[Task] with
-    override def pure[A](a: A): Task[A] = ZIO.succeed(a)
-    override def flatMap[A, B](fa: Task[A], f: A => Task[B]): Task[B] = fa.flatMap(f)
 
 
 extension[F[_] : Monad, A] (fa: F[A])
