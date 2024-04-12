@@ -1,5 +1,6 @@
 package free
 
+
 import scala.util.Try
 import zio.*
 
@@ -9,6 +10,9 @@ object Semigroup:
   def apply[A](f : (A, A) => A) = new Semigroup[A] {
     override def combine(a: A, b: A): A = f(a,b)
   }
+
+  given [A]: Semigroup[List[A]] with
+    def combine(a: List[A], b: List[A]): List[A] = a ++ b
 
 /**
  * The state monad

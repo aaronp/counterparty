@@ -1,7 +1,6 @@
 package free.examples
 
 
-import java.time.LocalDateTime
 import java.util.UUID
 
 /**
@@ -81,7 +80,8 @@ package object microservice {
 
   object DraftContractId:
     def create(): DraftContractId = UUID.randomUUID()
-    def apply(id : UUID): DraftContractId = id
+
+    def apply(id: UUID): DraftContractId = id
 
   // just to be clear what our errors are, rather than just strings
   type Error = String
@@ -101,6 +101,14 @@ package object microservice {
                                  secondCounterparty: CounterpartyB,
                                  terms: String,
                                  conditions: String)
+
+  object DraftContract:
+    def testData = DraftContract(
+      CounterpartyA("counterparty-A"),
+      CounterpartyB("counterparty-B"),
+      "the terms of the contract",
+      "the conditions of the contract"
+    )
 
   // counterparties may not sign the contract, opting instead to provide a reason
   type NotSignedReason = String
