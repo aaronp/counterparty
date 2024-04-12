@@ -63,36 +63,49 @@ package object microservice {
 
   // ... and let's not accidentally mix up our counterparties!
   opaque type CounterpartyA = String
+
+  object CounterpartyA:
+    def apply(id: String): CounterpartyA = id
+
   opaque type CounterpartyB = String
+
+  object CounterpartyB:
+    def apply(id: String): CounterpartyB = id
 
   opaque type CounterpartyRef = String
 
+  object CounterpartyRef:
+    def apply(ref: String): CounterpartyRef = ref
+
   opaque type DraftContractId = UUID
+
+  object DraftContractId:
+    def create(): UUID = UUID.randomUUID()
 
   // just to be clear what our errors are, rather than just strings
   type Error = String
 
   // represents something that will happen asynchronously and return the result A
-  case class Async[A](value : A)
+  case class Async[A](value: A)
 
-  final case class Contract(draft :DraftContract, id : DraftContractId)
+  final case class Contract(draft: DraftContract, id: DraftContractId)
 
 
   // the response from creating a draft contract
-  final case class CreateDraftResponse(firstCounterpartyRef : CounterpartyRef,
-                                       secondCounterpartyRef : CounterpartyRef)
+  final case class CreateDraftResponse(firstCounterpartyRef: CounterpartyRef,
+                                       secondCounterpartyRef: CounterpartyRef)
 
   // Our user data: just a noddy data structure representing some of the things in a contract
   final case class DraftContract(firstCounterparty: CounterpartyA,
                                  secondCounterparty: CounterpartyB,
                                  terms: String,
-                                 conditions: String,
-                                 startDate: LocalDateTime)
+                                 conditions: String)
 
   // counterparties may not sign the contract, opting instead to provide a reason
   type NotSignedReason = String
-  final case class SignContractResponse(firstCounterparty : CounterpartyRef | NotSignedReason,
-                                        secondCounterparty : CounterpartyRef | NotSignedReason)
+
+  final case class SignContractResponse(firstCounterparty: CounterpartyRef | NotSignedReason,
+                                        secondCounterparty: CounterpartyRef | NotSignedReason)
 
 
 }
