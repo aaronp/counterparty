@@ -9,8 +9,6 @@ import free.{*, given}
  * @tparam A this is the generic result type of each operation
  */
 enum CreateDraftLogic[A]:
-//  case CreateDraft(draft: DraftContract) extends CreateDraftLogic[CreateDraftResponse]
-
   case StoreDraftInDatabase(draft: DraftContract) extends CreateDraftLogic[DraftContractId]
   case NotifyCounterpartyA(contract: Contract) extends CreateDraftLogic[CounterpartyRef]
   case NotifyCounterpartyB(contract: Contract) extends CreateDraftLogic[CounterpartyRef]

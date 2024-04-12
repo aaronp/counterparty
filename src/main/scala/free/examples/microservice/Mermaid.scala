@@ -3,9 +3,10 @@ package free.examples.microservice
 import free.*
 import _root_.free.examples.{*, given}
 
+import scala.annotation.targetName
 import scala.util.control.NonFatal
 
-@main def generateMermainDiagram() = println(Mermaid())
+@main def generateMermaidDiagram(): Unit = println(Mermaid())
 /**
  * Turn an operation into a mermaid diagram
  */
@@ -17,9 +18,15 @@ object Mermaid {
   // we need a natural transformation to convert our operation types
   // into a 'BufferState' -- which is something that just keeps a
   // list of the operations called and their responses
+  @targetName("createDraftLogicAsBufferState")
   given~>[CreateDraftLogic, BufferState] with
     def apply[A](op: CreateDraftLogic[A]): BufferState[A] =
-      val result = interpreter(op.asInstanceOf[CreateDraftLogic[Any]])
+      val result = try {
+        interpreter(op.asInstanceOf[CreateDraftLogic[Any]])
+      } catch {
+        case NonFatal(e) => sys.error(s"error casting $op: $e")
+      }
+
       try {
         result.asInstanceOf[BufferState[A]]
       } catch {
