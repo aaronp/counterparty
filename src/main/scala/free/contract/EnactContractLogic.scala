@@ -1,5 +1,4 @@
-package free.examples.microservice
-
+package free.contract
 
 /**
  * 'EnactContract' is a separate business flow, so has different operations

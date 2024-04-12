@@ -1,7 +1,7 @@
-package free.examples.microservice
+package free.contract
 
-import _root_.free.examples.microservice.CreateDraftLogic.*
-import _root_.free.examples.{*, given}
+import CreateDraftLogic.*
+import _root_.free.contract.{*, given}
 import free.*
 
 import scala.annotation.targetName
@@ -9,66 +9,62 @@ import scala.annotation.targetName
 @main def generateMermaidDiagram(): Unit = {
   val contract = DraftContract.testData
   val sequenceDiagram = Mermaid(contract)
-  val script = asDockerScript(sequenceDiagram)
+  val script = s"""cat > diagram.md << 'EOF'
+                  |# Sequence Diagram
+                  |```mermaid
+                  |$sequenceDiagram
+                  |```
+                  |EOF
+                  |
+                  |docker run --rm -v "$$PWD:/data" minlag/mermaid-cli -i /data/diagram.md -o /data/diagram.svg
+                  |""".stripMargin
   println(script)
 }
 
-
-def asDockerScript(diagram: String) = {
-  s"""cat > diagram.md << 'EOF'
-     |# Sequence Diagram
-     |```mermaid
-     |$diagram
-     |```
-     |EOF
-     |
-     |docker run --rm -v "$$PWD:/data" minlag/mermaid-cli -i /data/diagram.md -o /data/diagram.svg
-     |""".stripMargin
-}
 /**
  * Turn an operation into a mermaid diagram
  */
 object Mermaid {
 
-  object actors {
+  object participants {
     val Svc = "ContractService"
     val DB = "Database"
     val CtrPtyA = "CounterpartyA"
     val CtrPtyB = "CounterpartyB"
-
     def all = List(Svc, DB, CtrPtyA, CtrPtyB)
   }
-  type Call = String
-  extension (calls: List[Call])
+  type MermaidInstruction = String
+
+  extension (calls: List[MermaidInstruction])
     def asState[A](result: A): State[Calls, A] = State.combine[Calls, A](calls, result)
-  extension (call: Call)
+  extension (call: MermaidInstruction)
     def asState[A](result: A): State[Calls, A] = List(call).asState(result)
 
-  type Calls = List[Call]
+  type Calls = List[MermaidInstruction]
   extension (calls: Calls)
     def asMermaidDiagram: String = {
-      (actors.all.map(p => s"participant $p") ++ calls).mkString("sequenceDiagram\n\t","\n\t","\n")
+      (participants.all.map(p => s"participant $p") ++ calls).mkString("sequenceDiagram\n\t","\n\t","\n")
     }
 
-  import actors.*
+  import participants.*
   def mermaidInterpreter[A]: CreateDraftLogic[A] => State[Calls, A] = (_: CreateDraftLogic[A]) match {
     case StoreDraftInDatabase(draft) =>
       val result = DraftContractId.create()
       List(
-        s"$Svc ->> $DB: save draft",
-        s"$DB --> $DB: $result"
+        s"$Svc->>$DB: save draft",
+        s"$DB-->$Svc: $result"
       ).asState(result)
     case NotifyCounterpartyA(contract) =>
       val result = CounterpartyRef(s"notified party A of ${contract.id}")
       List(
-        s"$Svc ->> $CtrPtyA : notify of ${contract.id}",
-        s"$CtrPtyA --> $Svc : $result"
+        s"$Svc->>$CtrPtyA : notify of ${contract.id}",
+        s"$CtrPtyA-->>$Svc : $result"
       ).asState(result)
     case NotifyCounterpartyB(contract) =>
       val result = CounterpartyRef(s"notified party B of ${contract.id}")
       List(
-        s"$Svc ->> $CtrPtyB : notify of ${contract.id}",
-        s"$CtrPtyB --> $Svc : $result"
+        s"$Svc->>$CtrPtyB : notify of ${contract.id}",
+        s"$CtrPtyB-->>$Svc : $result"
       ).asState(result)
     case LogMessage(msg) => s"Note right of $Svc : $msg".asState(())
   }

@@ -1,4 +1,4 @@
-package free.examples.microservice
+package free.contract
 
 import free.{*, given}
 

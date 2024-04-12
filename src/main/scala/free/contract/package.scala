@@ -1,5 +1,4 @@
-package free.examples
-
+package free
 
 import java.util.UUID
 
@@ -55,7 +54,7 @@ import java.util.UUID
  * }}}
  *
  */
-package object microservice {
+package object contract {
 
   // for readability (and type-checking, and flexibility), we'll create some type-aliases.
   // this will help the compiler enforce correctness rather than us having to write additional tests
