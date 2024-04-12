@@ -22,3 +22,4 @@ ui/.dart_tool
 ui/.flutter-plugins-dependencies
 .flutter-plugins
 .packages
+.vscode
