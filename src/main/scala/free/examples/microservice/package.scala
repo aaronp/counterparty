@@ -71,12 +71,11 @@ package object microservice {
 
   // just to be clear what our errors are, rather than just strings
   type Error = String
-  // we may want to have separate types for the user input and our contract.
-  // We'll create an alias here so it looks like we've done this, but it's just a pass-through
-  opaque type Contract = DraftContract
-  object Contract {
-    def apply(draft :DraftContract) : Error | Contract = draft
-  }
+
+  // represents something that will happen asynchronously and return the result A
+  case class Async[A](value : A)
+
+  final case class Contract(draft :DraftContract, id : DraftContractId)
 
 
   // the response from creating a draft contract

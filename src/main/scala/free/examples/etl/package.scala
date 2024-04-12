@@ -9,8 +9,8 @@ import free.freeM
 package object etl {
 
   type UserId = String
-
-  def log(msg: String) = Log(msg).freeM
+//
+//  def log(msg: String) = Log(msg).freeM
 
   def error(msg: String) = Log(msg, true).freeM
 

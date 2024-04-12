@@ -1,5 +1,3 @@
 package free.examples.microservice
 
-class Main {
-
-}
+@main def main() = println("hello world")

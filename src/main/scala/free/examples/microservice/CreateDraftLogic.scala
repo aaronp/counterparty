@@ -1,5 +1,6 @@
 package free.examples.microservice
 
+import free.{*, given}
 
 /**
  * An 'DraftOperation' represent the actions (and the inputs/outputs)
@@ -8,12 +9,26 @@ package free.examples.microservice
  * @tparam A this is the generic result type of each operation
  */
 enum CreateDraftLogic[A]:
-  case CreateDraft(draft: DraftContract) extends CreateDraftLogic[CreateDraftResponse]
+//  case CreateDraft(draft: DraftContract) extends CreateDraftLogic[CreateDraftResponse]
+
   case StoreDraftInDatabase(draft: DraftContract) extends CreateDraftLogic[DraftContractId]
-  case NotifyCounterpartyA(draft: Contract) extends CreateDraftLogic[CounterpartyRef]
-  case NotifyCounterpartyB(draft: Contract) extends CreateDraftLogic[CounterpartyRef]
+  case NotifyCounterpartyA(contract: Contract) extends CreateDraftLogic[CounterpartyRef]
+  case NotifyCounterpartyB(contract: Contract) extends CreateDraftLogic[CounterpartyRef]
   case LogMessage(message: String) extends CreateDraftLogic[Unit]
 
-object CreateDraftLogic {
+object CreateDraftLogic:
 
-}
+  /**
+   * This is our business logic (i.e. the control flow) for creating draft contracts
+   * @param draft the draft contract
+   * @return the business logic for creating a draft contract
+   */
+  def apply(draft: DraftContract) : Free[CreateDraftLogic, CreateDraftResponse] = for {
+    id <- StoreDraftInDatabase(draft).freeM
+    _ <- LogMessage(s"Saved draft ${id}").freeM
+    contract = Contract(draft, id)
+    refA <- NotifyCounterpartyA(contract).freeM
+    refB <- NotifyCounterpartyB(contract).freeM
+    response = CreateDraftResponse(refA, refB)
+    _ <- LogMessage(s"Returning $response").freeM
+  } yield response
