@@ -79,14 +79,8 @@ package object contract {
 
   object DraftContractId:
     def create(): DraftContractId = UUID.randomUUID()
-
+    def apply(id: String): DraftContractId = apply(UUID.nameUUIDFromBytes(id.getBytes))
     def apply(id: UUID): DraftContractId = id
-
-  // just to be clear what our errors are, rather than just strings
-  type Error = String
-
-  // represents something that will happen asynchronously and return the result A
-  case class Async[A](value: A)
 
   final case class Contract(draft: DraftContract, id: DraftContractId)
 

@@ -47,6 +47,10 @@ object Mermaid {
       (participants.all.map(p => s"participant $p") ++ calls).mkString("sequenceDiagram\n\t","\n\t","\n")
     }
 
+
+  /**
+   * An interpreter which turns our commands into mermaid syntax (built up in a State monad)
+   */
   import participants.*
   def mermaidInterpreter[A]: CreateDraftLogic[A] => State[Calls, A] = (_: CreateDraftLogic[A]) match {
     case StoreDraftInDatabase(draft) =>
