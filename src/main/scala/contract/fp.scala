@@ -1,9 +1,17 @@
 //> using scala "3.3.1"
-package free
+package contract
 
 import scala.util.Try
 import zio.*
 
+/**
+ * Instead of bringing in an FP library, we just provides a minimal implementation of what we need here
+ */
+
+/**
+ * Semigroup - a way of combining two of the same type
+ * @tparam A the type to combine
+ */
 trait Semigroup[A]:
   def combine(a: A, b: A): A
 object Semigroup:
@@ -16,9 +24,9 @@ object Semigroup:
 
 /**
  * The state monad
- * @param run
- * @tparam S
- * @tparam A
+ * @param run the state function which can provide an output paired with a new state when giving an initial state
+ * @tparam S the state type
+ * @tparam A the result type
  */
 case class State[S, A](run: S => (A, S)):
   def flatMap[B](f: A => State[S, B]): State[S, B] =
