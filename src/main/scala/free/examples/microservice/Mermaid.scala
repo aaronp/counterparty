@@ -10,21 +10,19 @@ import scala.annotation.targetName
   val contract = DraftContract.testData
   val sequenceDiagram = Mermaid(contract)
   val script = asDockerScript(sequenceDiagram)
-  
-  val path = java.nio.file.Paths.get("createDiagram.sh") 
-  java.nio.file.Files.writeString(path, script)
+  println(script)
 }
 
 
 def asDockerScript(diagram: String) = {
-  s"""cat << EOF > diagram.md
+  s"""cat > diagram.md << 'EOF'
      |# Sequence Diagram
      |```mermaid
      |$diagram
      |```
      |EOF
      |
-     |docker run --rm -v "$$PWD:/data" minlag/mermaid-cli -i /data/diagram.md -o /data/output.svg
+     |docker run --rm -v "$$PWD:/data" minlag/mermaid-cli -i /data/diagram.md -o /data/diagram.svg
      |""".stripMargin
 }
 /**
