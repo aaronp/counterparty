@@ -1,6 +1,6 @@
-package free.contract
+package contract
 
-import free.{*, given}
+import counterparty.service.server.model.CreateDraftResponse
 
 /**
  * An 'DraftOperation' represent the actions (and the inputs/outputs)
@@ -28,8 +28,7 @@ object CreateDraftLogic:
     contract = Contract(draft, id)
     refA <- NotifyCounterpartyA(contract).freeM
     refB <- NotifyCounterpartyB(contract).freeM
-    response = CreateDraftResponse(refA, refB)
+    response = CreateDraftResponse(Option(refA.code), Option(refB.code))
     _ <- LogMessage(s"Returning $response").freeM
   } yield response
-  
-  
+

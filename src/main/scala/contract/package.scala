@@ -1,4 +1,4 @@
-package free
+import counterparty.service.server.model.CreateContractRequest
 
 import java.util.UUID
 
@@ -59,46 +59,32 @@ package object contract {
   // for readability (and type-checking, and flexibility), we'll create some type-aliases.
   // this will help the compiler enforce correctness rather than us having to write additional tests
 
-  // ... and let's not accidentally mix up our counterparties!
-  opaque type CounterpartyA = String
-
-  object CounterpartyA:
-    def apply(id: String): CounterpartyA = id
-
-  opaque type CounterpartyB = String
-
-  object CounterpartyB:
-    def apply(id: String): CounterpartyB = id
-
   opaque type CounterpartyRef = String
 
   object CounterpartyRef:
     def apply(ref: String): CounterpartyRef = ref
 
+  extension (ref :CounterpartyRef)
+    def code: String = ref.toString
+
   opaque type DraftContractId = UUID
 
   object DraftContractId:
     def create(): DraftContractId = UUID.randomUUID()
+
     def apply(id: String): DraftContractId = apply(UUID.nameUUIDFromBytes(id.getBytes))
+
     def apply(id: UUID): DraftContractId = id
 
   final case class Contract(draft: DraftContract, id: DraftContractId)
 
-
-  // the response from creating a draft contract
-  final case class CreateDraftResponse(firstCounterpartyRef: CounterpartyRef,
-                                       secondCounterpartyRef: CounterpartyRef)
-
   // Our user data: just a noddy data structure representing some of the things in a contract
-  final case class DraftContract(firstCounterparty: CounterpartyA,
-                                 secondCounterparty: CounterpartyB,
-                                 terms: String,
-                                 conditions: String)
+  type DraftContract = CreateContractRequest
 
   object DraftContract:
-    def testData = DraftContract(
-      CounterpartyA("counterparty-A"),
-      CounterpartyB("counterparty-B"),
+    def testData = CreateContractRequest(
+      "counterparty-A",
+      "counterparty-B",
       "the terms of the contract",
       "the conditions of the contract"
     )

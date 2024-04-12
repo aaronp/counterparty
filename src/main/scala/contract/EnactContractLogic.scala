@@ -1,4 +1,4 @@
-package free.contract
+package contract
 
 /**
  * 'EnactContract' is a separate business flow, so has different operations

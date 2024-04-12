@@ -1,8 +1,7 @@
-package free.contract
+package contract.diagram
 
-import CreateDraftLogic.*
-import _root_.free.contract.{*, given}
-import free.*
+import contract.CreateDraftLogic.*
+import contract.{*, given}
 
 import scala.annotation.targetName
 
