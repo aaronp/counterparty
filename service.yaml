@@ -1,0 +1,79 @@
+openapi: 3.0.0
+info:
+  title: Contract Management API
+  description: API for managing draft contracts
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+paths:
+  /v1/contract:
+    post:
+      summary: Create a new draft contract
+      description: This endpoint allows creating a new draft contract with specified details.
+      operationId: createContract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - firstCounterparty
+                - secondCounterparty
+                - terms
+                - conditions
+              properties:
+                firstCounterparty:
+                  type: string
+                  description: The name of the first counterparty in the contract.
+                secondCounterparty:
+                  type: string
+                  description: The name of the second counterparty in the contract.
+                terms:
+                  type: string
+                  description: The terms agreed upon in the contract.
+                conditions:
+                  type: string
+                  description: The conditions of the contract.
+      responses:
+        '200':
+          description: Draft contract created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDraftResponse'
+        '400':
+          description: Invalid input received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: A message detailing the error with the provided input.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: A message detailing an internal error that prevented the contract creation.
+
+components:
+  schemas:
+    CreateDraftResponse:
+      type: object
+      properties:
+        firstCounterpartyRef:
+          type: string
+          description: The reference identifier for the first counterparty.
+        secondCounterpartyRef:
+          type: string
+          description: The reference identifier for the second counterparty.

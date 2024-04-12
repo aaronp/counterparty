@@ -12,11 +12,17 @@ import scala.collection.mutable.HashMap
 /**
  * The 'TestEnv' provides fake, in-memory implementations for our operations
  */
-class TestEnv(counterPartyA: FakeCounterpartyService = FakeCounterpartyService(),
-              counterPartyB: FakeCounterpartyService = FakeCounterpartyService(),
-              db: FakeDatabase = FakeDatabase(),
-              logs: mutable.ListBuffer[String] = mutable.ListBuffer()
+class InMemoryEnv(counterPartyA: FakeCounterpartyService = FakeCounterpartyService(),
+                  counterPartyB: FakeCounterpartyService = FakeCounterpartyService(),
+                  db: FakeDatabase = FakeDatabase(),
+                  logs: mutable.ListBuffer[String] = mutable.ListBuffer()
              ) {
+
+  /* This given (implicit) allows us to call 'foldLeft' on our logic
+   */
+  @targetName("createDraftLogicAsTask")
+  given~>[CreateDraftLogic, Task] with
+    def apply[A](op: CreateDraftLogic[A]): Task[A] = ZIO.attempt(onMessage(op).asInstanceOf[A])
 
   def asMap = Map(
     "counterpartyA" -> counterPartyA.contracts.toList,
@@ -37,11 +43,6 @@ class TestEnv(counterPartyA: FakeCounterpartyService = FakeCounterpartyService()
       () // <--- we need this here, as the return type from our log operation is Unit
   }
 
-  /* This given (implicit) allows us to call 'foldLeft' on our logic
-   */
-  @targetName("createDraftLogicAsTask")
-  given~>[CreateDraftLogic, Task] with
-    def apply[A](op: CreateDraftLogic[A]): Task[A] = ZIO.attempt(onMessage(op).asInstanceOf[A])
 }
 // a noddy / fake database
 class FakeDatabase(val contracts: mutable.Map[DraftContractId, DraftContract] = HashMap[DraftContractId, DraftContract]()) {

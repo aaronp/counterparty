@@ -1,0 +1,5 @@
+artifactId: counterparty-service
+groupId: "counterparty.service"
+package: "example.counterparty"
+gitRepoId: "counterparty"
+gitUserId: "aaronp"

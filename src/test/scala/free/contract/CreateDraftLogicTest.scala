@@ -1,15 +1,11 @@
 package free.contract
 
-import free.contract.CreateDraftLogic.*
-import free.~>
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import zio.*
 
 import java.util.UUID
-import scala.annotation.targetName
 import scala.collection.mutable
-import scala.collection.mutable.HashMap
 
 /**
  * This is just one example of more traditional "mock" testing.
@@ -24,7 +20,8 @@ class CreateDraftLogicTest extends AnyWordSpec with Matchers {
   "CreateDraftLogic" should {
     val draft = DraftContract.testData
     s"be able to create $draft" in {
-      val testEnv = TestEnv()
+      val testEnv = InMemoryEnv()
+      
       val result = run(testEnv.test(draft))
 
       val stableId = DraftContractId(UUID.fromString("fcd9af7e-a3d2-3422-a140-5d8dfd6128ba"))
