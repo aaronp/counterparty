@@ -96,12 +96,7 @@ enum Free[F[_], A]:
     case Suspend(fa) => nt(fa)
     case FlatMap(inner, f) =>
       val ge = inner.foldMap(Monad[G], nt)
-      Monad[G].flatMap(ge, in => {
-        println(s"calling flatMap w/ $in")
-        val freeResult = f(in)
-        println(s"got $freeResult")
-        freeResult.foldMap(Monad[G], nt)
-      })
+      Monad[G].flatMap(ge, in => f(in).foldMap(Monad[G], nt))
   }
 
 object Free:

@@ -22,6 +22,7 @@ object CreateDraftLogic:
    * @return the business logic for creating a draft contract
    */
   def apply(draft: DraftContract) : Free[CreateDraftLogic, CreateDraftResponse] = for {
+    _ <- LogMessage(s"Saving draft $draft").freeM
     id <- StoreDraftInDatabase(draft).freeM
     _ <- LogMessage(s"Saved draft ${id}").freeM
     contract = Contract(draft, id)
