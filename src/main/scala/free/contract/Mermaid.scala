@@ -36,7 +36,8 @@ object Mermaid {
   type MermaidInstruction = String
 
   extension (calls: List[MermaidInstruction])
-    def asState[A](result: A): State[Calls, A] = State.combine[Calls, A](calls, result)
+    // note: the 'reverse' is because we'll ultimately have to reverse the whole stack as we're prepending instructions
+    def asState[A](result: A): State[Calls, A] = State.combine[Calls, A](calls.reverse, result)
   extension (call: MermaidInstruction)
     def asState[A](result: A): State[Calls, A] = List(call).asState(result)
 
@@ -52,7 +53,7 @@ object Mermaid {
       val result = DraftContractId.create()
       List(
         s"$Svc->>$DB: save draft",
-        s"$DB-->$Svc: $result"
+        s"$DB-->>$Svc: returning $result"
       ).asState(result)
     case NotifyCounterpartyA(contract) =>
       val result = CounterpartyRef(s"notified party A of ${contract.id}")
