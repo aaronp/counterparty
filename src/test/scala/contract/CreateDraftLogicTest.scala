@@ -22,9 +22,9 @@ class CreateDraftLogicTest extends AnyWordSpec with Matchers {
     s"be able to create $draft" in {
       val testEnv = InMemoryEnv()
 
-      val result = testEnv.test(draft).run()
+      val result = testEnv.run(draft).execOrThrow()
 
-      val stableId = DraftContractId(UUID.fromString("fcd9af7e-a3d2-3422-a140-5d8dfd6128ba"))
+      val stableId = DraftContractId("id-0")
 
       // our assertions: prove our (fake) DB and counterparty services actually got invoked with the right arguments
       val expectedResponse: CreateDraftResponse = CreateDraftResponse(

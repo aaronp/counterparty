@@ -66,6 +66,74 @@ paths:
                     type: string
                     description: A message detailing an internal error that prevented the contract creation.
 
+  /v1/sign:
+    post:
+      summary: Receive signature status for draft contract
+      description: This endpoint receives references for a draft contract and returns signature status for each counterparty.
+      operationId: signDraftContract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - referenceA
+                - referenceB
+              properties:
+                referenceA:
+                  type: string
+                  description: Reference identifier for counterparty A.
+                referenceB:
+                  type: string
+                  description: Reference identifier for counterparty B.
+      responses:
+        '200':
+          description: Signature status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - counterpartyASigned
+                  - counterpartyBSigned
+                properties:
+                  counterpartyASigned:
+                    type: boolean
+                    description: Indicates if counterparty A has signed the contract.
+                  counterpartyBSigned:
+                    type: boolean
+                    description: Indicates if counterparty B has signed the contract.
+                  counterpartyANotSignedReason:
+                    type: string
+                    description: Reason why counterparty A has not signed the contract.
+                    nullable: true
+                  counterpartyBNotSignedReason:
+                    type: string
+                    description: Reason why counterparty B has not signed the contract.
+                    nullable: true
+
+        '400':
+          description: Invalid input received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: A message detailing the error with the provided input.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: A message detailing an internal error.
+
 components:
   schemas:
     CreateDraftResponse:

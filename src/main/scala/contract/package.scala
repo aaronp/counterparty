@@ -1,4 +1,4 @@
-import counterparty.service.server.model.CreateContractRequest
+import counterparty.service.server.model.*
 
 import java.util.UUID
 
@@ -64,22 +64,24 @@ package object contract {
   object CounterpartyRef:
     def apply(ref: String): CounterpartyRef = ref
 
-  extension (ref :CounterpartyRef)
+  extension (ref: CounterpartyRef)
     def code: String = ref.toString
 
-  opaque type DraftContractId = UUID
+  opaque type DraftContractId = String
 
   object DraftContractId:
-    def create(): DraftContractId = UUID.randomUUID()
+    def create(): DraftContractId = UUID.randomUUID().toString
 
-    def apply(id: String): DraftContractId = apply(UUID.nameUUIDFromBytes(id.getBytes))
+    def apply(id: String): DraftContractId = id
 
-    def apply(id: UUID): DraftContractId = id
+    def apply(id: UUID): DraftContractId = id.toString
 
   final case class Contract(draft: DraftContract, id: DraftContractId)
 
   // Our user data: just a noddy data structure representing some of the things in a contract
   type DraftContract = CreateContractRequest
+
+  type SignContract = SignDraftContractRequest
 
   object DraftContract:
     def testData = CreateContractRequest(
@@ -90,10 +92,12 @@ package object contract {
     )
 
   // counterparties may not sign the contract, opting instead to provide a reason
-  type NotSignedReason = String
+  case class NotSignedReason(reason: String)
 
-  final case class SignContractResponse(firstCounterparty: CounterpartyRef | NotSignedReason,
-                                        secondCounterparty: CounterpartyRef | NotSignedReason)
+  type SignatureResult = CounterpartyRef | NotSignedReason
+
+  type SignContractResponse = SignDraftContract200Response | CreateContract400Response | SignDraftContract500Response
+
 
 
 }

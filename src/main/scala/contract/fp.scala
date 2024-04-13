@@ -116,7 +116,7 @@ object Free:
   def liftM[F[_], A](fa: F[A]): Free[F, A] = Free.Suspend(fa)
 
 extension[F[_], A] (fa: F[A])
-  def freeM: Free[F, A] = Free.liftM(fa)
+  def free: Free[F, A] = Free.liftM(fa)
 
 extension[A] (value: A)
-  def free[F[_]]: Free[F, A] = Free.pure(value)
+  def freePure[F[_]]: Free[F, A] = Free.pure(value)

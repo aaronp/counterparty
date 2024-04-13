@@ -18,17 +18,19 @@ object CreateDraftLogic:
 
   /**
    * This is our business logic (i.e. the control flow) for creating draft contracts
+   *
    * @param draft the draft contract
    * @return the business logic for creating a draft contract
    */
-  def apply(draft: DraftContract) : Free[CreateDraftLogic, CreateDraftResponse] = for {
-    _ <- LogMessage(s"Saving draft $draft").freeM
-    id <- StoreDraftInDatabase(draft).freeM
-    _ <- LogMessage(s"Saved draft ${id}").freeM
+  def apply(draft: DraftContract) = for {
+    _ <- LogMessage(s"Saving draft $draft").free
+    id <- StoreDraftInDatabase(draft).free
+    _ <- LogMessage(s"Saved draft ${id}").free
     contract = Contract(draft, id)
-    refA <- NotifyCounterpartyA(contract).freeM
-    refB <- NotifyCounterpartyB(contract).freeM
+    refA <- NotifyCounterpartyA(contract).free
+    refB <- NotifyCounterpartyB(contract).free
     response = CreateDraftResponse(Option(refA.code), Option(refB.code))
-    _ <- LogMessage(s"Returning $response").freeM
+    _ <- LogMessage(s"Returning $response").free
   } yield response
+
 
