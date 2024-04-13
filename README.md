@@ -61,7 +61,7 @@ in the same way, which is a novel new approach.
 
 This application represents a counterparty contract service which allows two counterparties to share draft contracts, then optionally sign the proposed countract.
 
-It has two work-flows:
+It has two workflows:
 
 ### Negotiate Draft Contract
 ```mermaid
