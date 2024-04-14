@@ -46,6 +46,10 @@ package: packageRestCode
 	sbt assembly
 
 # packages up / publishes locally (to .ivy) the REST stubs
+testRestCode: generateRestCode
+	cd $(REST_STUBS_LOCATION) && sbt --warn testRestCode
+
+# packages up / publishes locally (to .ivy) the REST stubs
 packageRestCode: generateRestCode
 	cd $(REST_STUBS_LOCATION) && sbt --warn publishLocal
 
