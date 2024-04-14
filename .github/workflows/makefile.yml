@@ -14,5 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Make test
+    - name: generateRestCode
+      run: make test
+
+    - name: packageRestCode
+      run: make packageRestCode
+
+    - name: test
       run: make test
