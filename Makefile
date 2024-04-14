@@ -26,6 +26,9 @@ cleanRest:
 run: packageIfNeeded
 	 java -cp $(ARTEFACT_FILE) contract.server.Server
 
+test: packageIfNeeded
+	sbt test
+
 # a way to quickly regenerate the diagrams, assuming you've already generated/compiled/packaged the REST stuff
 # (e.g. ran packageIfNeeded)
 generateDiagramsFast:
