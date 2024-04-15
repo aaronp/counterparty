@@ -7,3 +7,4 @@ out
 target
 project/target
 ui
+.DS_Store
