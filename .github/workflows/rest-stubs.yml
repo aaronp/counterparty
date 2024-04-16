@@ -23,6 +23,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3  # Checks-out your repository under $GITHUB_WORKSPACE
 
+      - name: debug
+        run: echo "github.workspace is ${{ github.workspace }}"
+
       - name: Generate API client
         uses: docker://openapitools/openapi-generator-cli:latest
         with:
