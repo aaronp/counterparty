@@ -11,15 +11,14 @@ on:
 
 # Define the jobs to run
 jobs:
-  list-contents:
-    runs-on: ubuntu-latest
 
+  generate-rest-server:
+    runs-on: ubuntu-latest  # Define the type of machine to run the job on
+
+    # Define the steps of the job
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: List contents of the repository
-        run: ls -la ${{ github.workspace }}
+        uses: actions/checkout@v3  # Checks-out your repository under $GITHUB_WORKSPACE
 
       - name: Generate code
         uses: hatamiarash7/openapi-generator@v0.2.0
@@ -28,22 +27,6 @@ jobs:
           openapi-file: service.yaml
           config-file: openapi-config.yaml
           output-dir: target/rest-stubs
-
-  generate-rest-server:
-    runs-on: ubuntu-latest  # Define the type of machine to run the job on
-
-    container:
-      image: openapitools/openapi-generator-cli:latest
-      volumes:
-        - ${{ github.workspace }}:/local
-
-    # Define the steps of the job
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3  # Checks-out your repository under $GITHUB_WORKSPACE
-
-      - name: Generate API Server
-        run: docker run --rm generate -i /local/service.yaml -g scala-cask -c /local/openapi-config.yaml -o /local/target/rest-stubs
 
   package:
     runs-on: ubuntu-latest  # Define the type of machine to run the job on
