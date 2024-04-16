@@ -26,8 +26,8 @@ jobs:
 
     container:
       image: openapitools/openapi-generator-cli:latest
-      options: --volume ${{ github.workspace }}:/local
-
+      volumes:
+        - ${{ github.workspace }}:/local
 
     # Define the steps of the job
     steps:
