@@ -50,20 +50,12 @@ jobs:
             ${{ runner.os }}-sbt-
 
       - name: Build Project
-        run: sbt clean compile
-        working-directory: rest-stubs
-
-      - name: Test Project
-        run: sbt test
-        working-directory: rest-stubs
-
-      - name: Package JAR
-        run: sbt package
-        working-directory: rest-stubs
+        run: sbt clean compile test
+        working-directory: target/rest-stubs
 
       - name: Publish JAR to GitHub Packages
         run: sbt publish
-        working-directory: rest-stubs
+        working-directory: target/rest-stubs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
