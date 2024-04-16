@@ -21,6 +21,14 @@ jobs:
       - name: List contents of the repository
         run: ls -la ${{ github.workspace }}
 
+      - name: Generate code
+        uses: hatamiarash7/openapi-generator@v0.2.0
+        with:
+          generator: scala-cask
+          openapi-file: service.yaml
+          config-file: openapi-config.yaml
+          output-dir: target/rest-stubs
+
   generate-rest-server:
     runs-on: ubuntu-latest  # Define the type of machine to run the job on
 
