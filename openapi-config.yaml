@@ -1,4 +1,4 @@
-artifactId: counterparty-service
+artifactId: counterparty
 groupId: "com.github.aaronp"
 package: "example.counterparty"
 gitRepoId: "counterparty"
