@@ -35,8 +35,7 @@ jobs:
         uses: actions/checkout@v3  # Checks-out your repository under $GITHUB_WORKSPACE
 
       - name: Generate API Server
-        run: |
-          generate -i /local/service.yaml -g scala-cask -c /local/openapi-config.yaml -o /local/target/rest-stubs
+        run: docker run --rm generate -i /local/service.yaml -g scala-cask -c /local/openapi-config.yaml -o /local/target/rest-stubs
 
   package:
     runs-on: ubuntu-latest  # Define the type of machine to run the job on
