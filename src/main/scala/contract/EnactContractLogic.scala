@@ -1,6 +1,6 @@
 package contract
 
-import counterparty.service.server.model.{CreateDraftResponse, SignDraftContract200Response}
+import counterparty.service.server.model.SignDraftContract200Response
 
 /**
  * This trait is used to provide a generic 'Async' type for our enact contract logic.
@@ -38,7 +38,7 @@ trait EnactContract {
         case (NotSignedReason(reasonA), NotSignedReason(reasonB)) => SignDraftContract200Response(false, false, Option(reasonA), Option(reasonB))
       }
     }
-
+    
     def apply[T](request: SignContract) = for {
       _ <- LogMessage("Signing contracts").free
       processA <- RequestSignatureA(CounterpartyRef(request.referenceA)).free

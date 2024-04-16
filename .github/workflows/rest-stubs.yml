@@ -1,0 +1,62 @@
+name: OpenAPI Generator
+
+# Define when the workflow should run
+on:
+  push:
+    branches:
+      - *
+
+# Define the jobs to run
+jobs:
+  generate-rest-server:
+    runs-on: ubuntu-latest  # Define the type of machine to run the job on
+
+    # Define the steps of the job
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3  # Checks-out your repository under $GITHUB_WORKSPACE
+
+      - name: Generate API client
+        uses: docker://openapitools/openapi-generator-cli:latest
+        with:
+          args: generate -i /local/service.yaml -g scala-cask -c /local/openapi-config.yaml -o /local/target/rest-stubs
+
+  package:
+    runs-on: ubuntu-latest  # Define the type of machine to run the job on
+    needs: generate-rest-server
+    steps:
+      - name: Setup Scala and Java
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: 11
+
+      - name: Cache SBT
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.sbt
+            ~/.ivy2/cache
+            ~/.coursier/cache
+            ~/.cache/coursier
+          key: ${{ runner.os }}-sbt-${{ hashFiles('**/*.sbt', '**/project/**/*.scala', '**/project/build.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-sbt-
+
+      - name: Build Project
+        run: sbt clean compile
+        working-directory: rest-stubs
+
+      - name: Test Project
+        run: sbt test
+        working-directory: rest-stubs
+
+      - name: Package JAR
+        run: sbt package
+        working-directory: rest-stubs
+
+      - name: Publish JAR to GitHub Packages
+        run: sbt publish
+        working-directory: rest-stubs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
