@@ -28,7 +28,7 @@ jobs:
           config-file: openapi-config.yaml
           output-dir: target/rest-stubs
 
-  package:
+  package-rest:
     runs-on: ubuntu-latest  # Define the type of machine to run the job on
     needs: generate-rest-server
     steps:
@@ -59,3 +59,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
+
+  build-project:
+    runs-on: ubuntu-latest  # Define the type of machine to run the job on
+    needs: package-rest
+    steps:
+      - name: Setup Scala and Java
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: 11
+
+      - name: Cache SBT
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.sbt
+            ~/.ivy2/cache
+            ~/.coursier/cache
+            ~/.cache/coursier
+          key: ${{ runner.os }}-sbt-${{ hashFiles('**/*.sbt', '**/project/**/*.scala', '**/project/build.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-sbt-
+
+      - name: Build Project
+        run: sbt clean compile test
+
+      - name: Generate Sequence Diagrams
+        run: sbt --warn "runMain contract.diagram.generateMermaidDiagram" | tail -n +1
