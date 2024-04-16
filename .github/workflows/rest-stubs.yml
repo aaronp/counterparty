@@ -14,6 +14,10 @@ jobs:
   generate-rest-server:
     runs-on: ubuntu-latest  # Define the type of machine to run the job on
 
+    container:
+      image: openapitools/openapi-generator-cli:latest
+      options: --volume ${{ github.workspace }}:/local
+
     # Define the steps of the job
     steps:
       - name: Checkout code
