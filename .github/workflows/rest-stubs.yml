@@ -36,11 +36,7 @@ jobs:
 
       - name: Generate API Server
         run: |
-          generate \
-            -i /local/service.yaml \
-            -g scala-cask \
-            -c /local/openapi-config.yaml \
-            -o /local/target/rest-stubs
+          generate -i /local/service.yaml -g scala-cask -c /local/openapi-config.yaml -o /local/target/rest-stubs
 
   package:
     runs-on: ubuntu-latest  # Define the type of machine to run the job on
