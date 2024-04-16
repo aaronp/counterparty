@@ -63,11 +63,12 @@ jobs:
       - name: Build Project
         run: sbt clean compile test
 
-      - name: Publish JAR to GitHub Packages
-        run: sbt publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
+# TODO - as a work-around, we can publish locally / pass through
+#      - name: Publish JAR to GitHub Packages
+#        run: sbt publish
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
 
   build-project:
     runs-on: ubuntu-latest  # Define the type of machine to run the job on

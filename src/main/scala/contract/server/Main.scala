@@ -17,8 +17,8 @@ import counterparty.service.server.{BaseApp, model}
  * @param signLogic the business logic for signing
  */
 class Service(
-               draftLogic: InMemoryEnv = InMemoryEnv(),
-               signLogic : SignContractInMemory = SignContractInMemory()) extends DefaultService {
+               draftLogic: CreateDraftHandler = CreateDraftHandler.InMemory(),
+               signLogic : SignContractHandler = SignContractHandler.InMemory()) extends DefaultService {
   override def createContract(request: DraftContract) = {
     draftLogic.run(request).execOrThrow()
   }
