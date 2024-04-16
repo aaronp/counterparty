@@ -26,6 +26,12 @@ jobs:
       - name: debug
         run: echo "github.workspace is ${{ github.workspace }}"
 
+      - name: debug2
+        run: echo "ls -Alrt ${{ github.workspace }}"
+
+      - name: debug3
+        run: echo "find ${{ github.workspace }} -print"
+
       - name: Generate API client
         uses: docker://openapitools/openapi-generator-cli:latest
         with:
