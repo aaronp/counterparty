@@ -4,7 +4,10 @@ name: OpenAPI Generator
 on:
   push:
     branches:
-      - *
+      - '*'
+  pull_request:
+    branches:
+      - '*'
 
 # Define the jobs to run
 jobs:
