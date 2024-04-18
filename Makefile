@@ -9,6 +9,10 @@ else
 PACKAGE_DEPENDENCY :=
 endif
 
+# This starts vite and sbt in parallel so you can run the JS code in the browser
+runUI:
+	npm run dev
+
 # cleans the whole project (the generated REST service files and these project files)
 clean: cleanDiagram cleanRest
 	sbt clean

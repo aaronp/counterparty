@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extended Animated Messages in SVG</title>
+    <style>
+        .tooltip {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            visibility: hidden;
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 2px 5px;
+            border-radius: 4px;
+            position: absolute;
+            z-index: 1;
+        }
+
+        svg {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Rectangle A -->
+        <rect id="A" x="50" y="150" width="40" height="20" fill="blue"/>
+        <!-- Rectangle B -->
+        <rect id="B" x="130" y="50" width="40" height="20" fill="red"/>
+        <!-- Rectangle C -->
+        <rect id="C" x="210" y="150" width="40" height="20" fill="green"/>
+
+        <!-- Message from A to B -->
+        <circle cx="70" cy="160" r="5" fill="orange">
+            <animateMotion dur="3s" repeatCount="indefinite">
+                <mpath href="#pathAB" />
+            </animateMotion>
+            <title id="tooltipAB">First</title>
+        </circle>
+        <!-- Message from B to C -->
+        <circle cx="150" cy="60" r="5" fill="purple">
+            <animateMotion dur="3s" repeatCount="indefinite">
+                <mpath href="#pathBC" />
+            </animateMotion>
+            <title id="tooltipBC">Second</title>
+        </circle>
+        <!-- Message from C to A with a 5-second delay -->
+        <circle cx="230" cy="160" r="5" fill="yellow">
+            <animateMotion dur="3s" repeatCount="indefinite" begin="5s">
+                <mpath href="#pathCA" />
+            </animateMotion>
+            <title id="tooltipCA">Third</title>
+        </circle>
+
+        <!-- Paths for the animations -->
+        <path id="pathAB" d="M70,160 L150,60" fill="none" stroke="transparent"/>
+        <path id="pathBC" d="M150,60 L230,160" fill="none" stroke="transparent"/>
+        <path id="pathCA" d="M230,160 L70,160" fill="none" stroke="transparent"/>
+    </svg>
+
+    <script>
+        // Adding dynamic behavior for tooltip updates could be done here
+        // For instance, changing tooltips based on some dynamic conditions
+    </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Animation with Tooltip</title>
+    <style>
+        circle:hover .tooltip {
+            visibility: visible;
+        }
+        .tooltip {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            visibility: hidden;
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 5px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+        }
+    </style>    
+</head>
+<body>
+    <svg id="svgRoot" width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- Define the positions and animations for the peripheral circles -->
+        %s
+        <!-- Message Circle with Tooltip -->
+        <circle id="messageCircle" cx="150" cy="90" r="5" fill="orange">
+            <title id="tooltipText">Message ID: 1, Hello!</title>
+        </circle>
+        
+        <animateMotion
+            xlink:href="#messageCircle"
+            dur="10s"
+            repeatCount="indefinite"
+            rotate="auto">
+            <mpath xlink:href="#motionPath" />
+        </animateMotion>
+    </svg>
+
+    <!-- Buttons to control the animation -->
+    <button onclick="document.getElementById('svgRoot').pauseAnimations()">Pause</button>
+    <button onclick="document.getElementById('svgRoot').unpauseAnimations()">Resume</button>
+
+    <script>
+        document.getElementById('messageCircle').addEventListener('mouseover', function() {
+            document.getElementById('tooltipText').textContent = 'Message ID: ' + Math.floor(Math.random() * 100) + ', Hello!';
+        });
+    </script>
+    <script>
+        const svgNS = "http://www.w3.org/2000/svg";
+        let radius = 80; // Radius for peripheral circles
+        let center = 150; // SVG view box center
+    
+        // Create peripheral circles and motion path
+        let pathD = "M ";
+        for (let i = 0; i < 5; i++) {
+            let angle = (Math.PI / 2.5) * i; // Divide the circle into 5 parts
+            let x = center + radius * Math.cos(angle);
+            let y = center + radius * Math.sin(angle);
+            // Create circle
+            let circle = document.createElementNS(svgNS, "circle");
+            circle.setAttribute("cx", x);
+            circle.setAttribute("cy", y);
+            circle.setAttribute("r", 20);
+            circle.setAttribute("fill", "grey");
+            document.querySelector("svg").appendChild(circle);
+    
+            // Append positions to pathD for the motion path
+            if (i === 0) {
+                pathD += `${x} ${y}`;
+            } else {
+                pathD += ` L ${x} ${y}`;
+            }
+        }
+        pathD += " Z"; // Close the path
+    
+        // Create the motion path element
+        let path = document.createElementNS(svgNS, "path");
+        path.setAttribute("id", "motionPath");
+        path.setAttribute("d", pathD);
+        path.setAttribute("fill", "none");
+        document.querySelector("svg").appendChild(path);
+    </script>
+
+</body>
+</html>

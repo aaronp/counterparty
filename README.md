@@ -21,9 +21,9 @@ meaningful way, as the same code / logic which drives the backend can be visuali
 
 # About This project
 
-See [here](about.md) to read more about this project and how it works.
+See [here](./docs/about.md) to read more about this project and how it works.
 
-Check [here](building.md) for more about building/running this project.
+Check [here](./docs/building.md) for more about building/running this project.
 
 # Further Examples 
 
@@ -37,3 +37,7 @@ in a cluster as easy as opening a new browser tab! 💪💪💪
 It also demonstrates how you can run "What If?" scenarios on your application (e.g. generate reports of
 how your software would behave when given certain inputs), allowing quality-assurance engineers to quickly
 review hundreds of permutations of scenarios.
+
+Also see [Daniel Spiewak's excellent talk](https://www.youtube.com/watch?v=aKUQUIHRGec) (and [here too](https://www.youtube.com/watch?v=cxMo1RMsD0M)) where he derives the Free Monad.
+
+For more about IO and effect types, see [John DeGoes's wonderful 'FP to the Min'](https://www.youtube.com/watch?v=mrHphQT4RpU) 

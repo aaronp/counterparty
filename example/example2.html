@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Animation Control</title>
+    <style>
+        @keyframes moveMessage {
+            from { transform: translate(0, 0); }
+            to { transform: translate(130px, 0); }
+        }
+    </style>
+</head>
+<body>
+    <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg" style="background-color: white;">
+        <!-- Rectangle A -->
+        <rect x="10" y="10" width="50" height="50" fill="blue"/>
+        
+        <!-- Rectangle B -->
+        <rect x="140" y="10" width="50" height="50" fill="red"/>
+        
+        <!-- Circle (Message) with CSS Animation -->
+        <circle id="animatedCircle" cx="35" cy="35" r="5" fill="green" style="animation: moveMessage 3s linear infinite;">
+        </circle>
+    </svg>
+
+    <!-- Button to control the animation -->
+    <button onclick="toggleAnimation()">Pause/Resume</button>
+
+    <script>
+        function toggleAnimation() {
+            var circle = document.getElementById('animatedCircle');
+            if (circle.style.animationPlayState === 'paused') {
+                circle.style.animationPlayState = 'running';
+            } else {
+                circle.style.animationPlayState = 'paused';
+            }
+        }
+    </script>
+</body>
+</html>
