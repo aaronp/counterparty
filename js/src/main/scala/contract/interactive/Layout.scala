@@ -24,15 +24,40 @@ class LayoutPage(
 
   lazy val sortedActors = actors.toList.sortBy(_.category)
 
+  def categories = actors.map(_.category).toSet
+
   def svgGraph = svg(
     width  := config.width,
     height := config.height,
     xmlns  := "http://www.w3.org/2000/svg",
     style  := config.svgStyle
   )(
-    Arc(config.center, 120, 20.degrees, 180.degrees).asSvg(30, "red"),
-    Arc(config.center, 120, 180.degrees, 360.degrees).asSvg(30, "blue")
+    arcsForCategories
+    // Arc(config.center, 120, 20.degrees, 180.degrees).asSvg(30, "red"),
+    // Arc(config.center, 120, 180.degrees, 360.degrees).asSvg(30, "blue")
   ) // draw the circle
+
+  /** Draw arc backgrounds for each category
+    */
+  def arcsForCategories = {
+    val totalCategories = categories.size
+    val colors          = Colors(totalCategories)
+    categories.toList.zipWithIndex.map { (category, i) =>
+
+      val start = (i * 360 / totalCategories).degrees
+      val end   = ((i + 1) * 360 / totalCategories).degrees
+
+      //
+      Arc(config.center, config.radius, start, end)
+        .asSvg(
+          config.actorConfig.categoryWidth,
+          colors(i),
+          s"arc-${category.filter(_.isLetterOrDigit)}",
+          category
+        )
+    }
+
+  }
 
   private def actorPoints: Seq[Text.TypedTag[String]] = {
     val points = pointsAroundCenterpoint(config.center, config.radius, actors.size)
@@ -80,43 +105,43 @@ object LayoutPage {
   import Degrees.*
 
   case class Arc(center: Point, radius: Int, startAngle: Degrees, endAngle: Degrees) {
-    def asSvg(arcWidth: Int, color: String) = {
-
-      // Convert degrees to radians
-
-      // Calculate the start point
+    def asSvg(arcWidth: Int, color: String, pathId: String, label: String) = {
       val startX = center.x + (radius * Math.cos(endAngle.asRadians))
       val startY = center.y + (radius * Math.sin(endAngle.asRadians))
 
-      // Calculate the end point
       val endX = center.x + (radius * Math.cos(startAngle.asRadians))
       val endY = center.y + (radius * Math.sin(startAngle.asRadians))
 
-      // Define the SVG path command with arc
       val largeArcFlag = if ((endAngle - startAngle) % 360 > 180) then 1 else 0 // Large arc flag
       val sweepFlag    = 0
 
       g(
         path(
+          id     := pathId,
           d      := s"M $startX $startY A $radius $radius 0 $largeArcFlag $sweepFlag $endX $endY",
           stroke := color,
           strokeWidth := arcWidth,
           fill        := "none"
+        ),
+        text(fontSize := 20)(
+          textPath(xLinkHref := s"#${pathId}", offset := "50")(label)
         )
       )
     }
-    // def asSvg(arcWidth: Int, color: String = "black") = scalatags.Text.svgTags.path(
-    //   fill        := "none",
-    //   stroke      := color,
-    //   strokeWidth := arcWidth
-    // )(
-    //   g(
-    //     svgTags.marker()
-    //   )
-    // )
   }
 
-  case class ActorConfig(labelYOffset: Int = 40, estimatedTextHeight: Int = 20, iconScale: Int = 4):
+  case class ActorConfig(
+      // how much further down should the actor labels be from the actor icon?
+      labelYOffset: Int = 40,
+      // how big is the text size do we think (hack for laying out actors in a circle)
+      estimatedTextHeight: Int = 20,
+      // how much should we scale the emoji icons?
+      iconScale: Int = 4,
+      // how big of a gap should we have between categories
+      categoryGap: Degrees = 5.degrees,
+      // how thick is the category arch?
+      categoryWidth: Int = 250
+  ):
     def fullHeight = labelYOffset + estimatedTextHeight
   end ActorConfig
 
