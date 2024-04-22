@@ -1,4 +1,4 @@
-package contract.interactive
+package contract.interactive.ui
 
 /** Functions for creating colors
   */
