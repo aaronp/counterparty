@@ -42,21 +42,36 @@ class LayoutPage(
   def arcsForCategories = {
     val totalCategories = categories.size
     val colors          = Colors(totalCategories)
-    categories.toList.zipWithIndex.map { (category, i) =>
+    categories.toList.zipWithIndex.flatMap { (category, i) =>
+      CategorySection(category, i, totalCategories, colors(i)).arcs
+    }
+  }
 
-      val start = (i * 360 / totalCategories).degrees
-      val end   = ((i + 1) * 360 / totalCategories).degrees
+  case class CategorySection(category: String, i: Int, totalCategories: Int, color: String) {
+    // the background arc
+    def arcs = {
+      val start     = (i * 360 / totalCategories).degrees
+      val end       = ((i + 1) * 360 / totalCategories).degrees - config.actorConfig.categoryGap
+      val thickness = config.actorConfig.categoryThickness
 
-      //
-      Arc(config.center, config.radius, start, end)
+      val backgroundArc = Arc(config.center, config.radius, start, end)
         .asSvg(
-          config.actorConfig.categoryWidth,
-          colors(i),
+          thickness,
+          color,
           s"arc-${category.filter(_.isLetterOrDigit)}",
+          ""
+        )
+
+      val labelRadius = config.radius + thickness / 2 + 20
+      val labelArc = Arc(config.center, labelRadius, start, end)
+        .asSvg(
+          1,
+          "white",
+          s"arclabel-${category.filter(_.isLetterOrDigit)}",
           category
         )
+      Seq(backgroundArc, labelArc)
     }
-
   }
 
   private def actorPoints: Seq[Text.TypedTag[String]] = {
@@ -99,7 +114,8 @@ object LayoutPage {
   object Degrees:
     def apply(d: Double): Degrees = d
     extension (d: Degrees) {
-      def asRadians: Double = (d * Math.PI / 180)
+      def asRadians: Double          = (d * Math.PI / 180)
+      def -(other: Degrees): Degrees = Degrees(d - other)
     }
   end Degrees
   import Degrees.*
@@ -124,7 +140,7 @@ object LayoutPage {
           fill        := "none"
         ),
         text(fontSize := 20)(
-          textPath(xLinkHref := s"#${pathId}", offset := "50")(label)
+          textPath(xLinkHref := s"#${pathId}", stags.attr("startOffset") := "50%")(label)
         )
       )
     }
@@ -140,7 +156,7 @@ object LayoutPage {
       // how big of a gap should we have between categories
       categoryGap: Degrees = 5.degrees,
       // how thick is the category arch?
-      categoryWidth: Int = 250
+      categoryThickness: Int = 250
   ):
     def fullHeight = labelYOffset + estimatedTextHeight
   end ActorConfig
