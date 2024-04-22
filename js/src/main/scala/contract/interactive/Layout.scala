@@ -47,11 +47,15 @@ class LayoutPage(
     }
   }
 
+  /** Represents the data needed to render a category
+    */
   case class CategorySection(category: String, i: Int, totalCategories: Int, color: String) {
-    // the background arc
+    // the start and end angles for the arc
+    private val start = (i * 360 / totalCategories).degrees
+    private val end   = ((i + 1) * 360 / totalCategories).degrees - config.actorConfig.categoryGap
+
+    // the background and label arcs
     def arcs = {
-      val start     = (i * 360 / totalCategories).degrees
-      val end       = ((i + 1) * 360 / totalCategories).degrees - config.actorConfig.categoryGap
       val thickness = config.actorConfig.categoryThickness
 
       val backgroundArc = Arc(config.center, config.radius, start, end)
