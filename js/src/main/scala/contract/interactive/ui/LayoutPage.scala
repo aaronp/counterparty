@@ -14,6 +14,8 @@ import scalatags.Text.implicits.{given, *}
 
 import scala.scalajs.js.annotation.*
 import scala.concurrent.duration.{given, *}
+import scala.collection.MapView
+import scalatags.Text.TypedTag
 
 class LayoutPage(
     actors: Set[Actor],
@@ -25,27 +27,14 @@ class LayoutPage(
 
   lazy val sortedActors = actors.toList.sortBy(_.category)
 
-  def categories = actors.map(_.category).toSet
-
   def svgGraph = svg(
     width  := config.width,
     height := config.height,
     xmlns  := "http://www.w3.org/2000/svg",
     style  := config.svgStyle
-  )(
-    arcsForCategories
-    // Arc(config.center, 120, 20.degrees, 180.degrees).asSvg(30, "red"),
-    // Arc(config.center, 120, 180.degrees, 360.degrees).asSvg(30, "blue")
-  ) // draw the circle
-
-  /** Draw arc backgrounds for each category
-    */
-  def arcsForCategories = {
-    val totalCategories = categories.size
-    val colors          = Colors(totalCategories)
-    categories.toList.zipWithIndex.flatMap { (category, i) =>
-      CategorySection(category, i, totalCategories, colors(i)).arcs(config)
-    }
+  ) {
+    val sections = CategorySection.forActors(actors, config)
+    sections.flatMap(_.backgroundArcComponents) ++ sections.flatMap(_.actorComponents)
   }
 
   private def actorPoints: Seq[Text.TypedTag[String]] = {

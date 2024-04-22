@@ -35,7 +35,7 @@ case class Arc(center: Point, radius: Int, startAngle: Degrees, endAngle: Degree
         fill        := "none"
       ),
       text(fontSize := 20)(
-        textPath(xLinkHref := s"#${pathId}", stags.attr("startOffset") := "50%")(label)
+        textPath(xLinkHref := s"#${pathId}", stags.attr("startOffset") := "10%")(label)
       )
     )
   }

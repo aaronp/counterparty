@@ -10,8 +10,11 @@ package object ui {
     extension (d: Degrees) {
       def asRadians: Double          = (d * Math.PI / 180)
       def -(other: Degrees): Degrees = Degrees(d - other)
-      def toDouble                   = d
-      def toInt                      = d.toInt
+      def +(other: Degrees): Degrees = Degrees(d + other)
+      def *(other: Double): Degrees  = Degrees(d * other)
+      def /(other: Double): Degrees  = Degrees(d / other)
+      def toDouble: Double           = d
+      def toInt: Int                 = d.toInt
     }
   end Degrees
   import Degrees.*
