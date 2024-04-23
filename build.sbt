@@ -8,14 +8,18 @@ ThisBuild / scalafmtOnCompile := true
 
 // Common settings
 lazy val commonSettings = Seq(
+  buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+  buildInfoPackage := "counterparties.buildinfo",
   libraryDependencies ++= Seq(
     "dev.zio" %%% "zio" % "2.0.22",
     "org.scalatest" %%% "scalatest" % "3.2.18" % Test,
-    "com.lihaoyi" %%% "upickle" % "3.2.0"
+    "com.lihaoyi" %%% "upickle" % "3.2.0",
+    "com.lihaoyi" %%% "sourcecode" % "0.4.1"
   )
 )
 
 lazy val app = crossProject(JSPlatform, JVMPlatform).in(file(".")).
+  enablePlugins(BuildInfoPlugin).
   settings(commonSettings).
   jvmSettings(
     libraryDependencies ++= Seq(

@@ -3,16 +3,17 @@ package contract.interactive.ui
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
 import org.scalajs.dom
-import scalatags.Text
+import scalatags.JsDom
 
 // import scalatags.JsDom.all.*
-import scalatags.Text.{svgTags => stags}
-import scalatags.Text.svgTags.*
-import scalatags.Text.svgAttrs.*
-import scalatags.Text.implicits.{given, *}
+import scalatags.JsDom.{svgTags => stags}
+import scalatags.JsDom.svgTags.*
+import scalatags.JsDom.svgAttrs.*
+import scalatags.JsDom.implicits.{given, *}
 
 import scala.scalajs.js.annotation.*
 import scala.concurrent.duration.{given, *}
+import org.scalajs.dom.Element
 
 /** 🤮🤮🤮 Chuffing SVG's layout of an arc sucks.... you have to give it points on the arc, the
   * radius, and ...🤮🤮🤮
@@ -23,7 +24,7 @@ import scala.concurrent.duration.{given, *}
   * This data structure translates that into the SVG path that we need.
   */
 case class Arc(center: Point, radius: Int, startAngle: Degrees, endAngle: Degrees) {
-  def asSvg(arcWidth: Int, color: String, pathId: String, label: String) = {
+  def asSvg(arcWidth: Int, color: String, pathId: String, label: String): Element = {
     val startX = center.x + (radius * Math.cos(endAngle.asRadians))
     val startY = center.y + (radius * Math.sin(endAngle.asRadians))
 
@@ -45,6 +46,6 @@ case class Arc(center: Point, radius: Int, startAngle: Degrees, endAngle: Degree
       text(fontSize := 20)(
         textPath(xLinkHref := s"#${pathId}", stags.attr("startOffset") := "35%")(label)
       )
-    )
+    ).render
   }
 }

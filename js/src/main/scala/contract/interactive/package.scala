@@ -39,7 +39,16 @@ package object interactive {
 
     /** Representation of a message being sent from one actor to another
       */
-  case class SendMessage(from: Actor, to: Actor, timestamp: Long, duration: Duration, message: Json)
+  case class SendMessage(
+      from: Actor,
+      to: Actor,
+      timestamp: Long,
+      duration: Duration,
+      message: Json
+  ) {
+    def endTimestamp           = timestamp + duration.toMillis
+    def isActiveAt(time: Long) = timestamp <= time && time <= timestamp + duration.toMillis
+  }
   object SendMessage:
     def test = SendMessage(
       Actor.person("foo", "dave"),

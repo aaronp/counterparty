@@ -3,18 +3,20 @@ package contract.interactive.ui
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
 import org.scalajs.dom
-import scalatags.Text
+import scalatags.JsDom
 
 import contract.interactive.*
-import scalatags.Text.{svgTags => stags}
-import scalatags.Text.svgTags.*
-import scalatags.Text.svgAttrs.*
-import scalatags.Text.implicits.{given, *}
+import scalatags.JsDom.{svgTags => stags}
+import scalatags.JsDom.svgTags.*
+import scalatags.JsDom.svgAttrs.*
+import scalatags.JsDom.implicits.{given, *}
 
+import org.scalajs.dom.Node
 import scala.scalajs.js.annotation.*
 import scala.concurrent.duration.{given, *}
-import scalatags.Text.TypedTag
+import scalatags.JsDom.TypedTag
 import scala.collection.mutable.ListBuffer
+import org.scalajs.dom.Element
 
 /** This is probably the hardest part of this whole thing ... the trigonometry to lay out the actors
   * in a circle!
@@ -45,7 +47,7 @@ case class CategorySection(
 ) {
   require(arcEnd.toDouble > arcStart.toDouble)
 
-  def actorComponents: Seq[TypedTag[String]] = {
+  def actorComponents: Seq[Element] = {
 
     val steps         = actorsInThisCategory.size
     val step: Degrees = (arcEnd - arcStart) / (actorsInThisCategory.size + 1)
@@ -68,11 +70,11 @@ case class CategorySection(
           dominantBaseline := "middle",
           transform        := s"translate($x,$yOffset)"
         )(s"${actor.label}")
-      )
+      ).render
     }
   }
 
-  def backgroundArcComponents: Seq[TypedTag[String]] = {
+  def backgroundArcComponents: Seq[Node] = {
 
     val thickness = config.actorConfig.categoryThickness
 
