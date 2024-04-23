@@ -91,6 +91,7 @@ object LayoutPage {
 def layout(): Unit = {
   val actors = List(
     Actor.person("counterparty-A", "Alice"),
+    Actor.person("counterparty-A", "Alice's Lawyer"),
     Actor.database("counterparty-service", "MongoDB"),
     Actor.queue("counterparty-service", "Notification Queue"),
     Actor.service("counterparty-service", "Counterparty Service"),
@@ -98,7 +99,7 @@ def layout(): Unit = {
     Actor.email("counterparty-service", "Email Service"),
     Actor.person("counterparty-B", "Bob")
   )
-  val List(alice, mongo, queue, service, etl, email, bob) = actors
+  val List(alice, lawyer, mongo, queue, service, etl, email, bob) = actors
   val messages = List(
     SendMessage(alice, service, 1234, 1.seconds, ujson.Obj("hello" -> "world")),
     SendMessage(service, mongo, 2345, 2.seconds, ujson.Obj("hello" -> "world")),

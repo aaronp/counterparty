@@ -14,6 +14,14 @@ import scalatags.Text.implicits.{given, *}
 import scala.scalajs.js.annotation.*
 import scala.concurrent.duration.{given, *}
 
+/** 🤮🤮🤮 Chuffing SVG's layout of an arc sucks.... you have to give it points on the arc, the
+  * radius, and ...🤮🤮🤮
+  *
+  * It's just not what we want ... we want a center points, a radius, and a start and end angle.
+  * That's it.
+  *
+  * This data structure translates that into the SVG path that we need.
+  */
 case class Arc(center: Point, radius: Int, startAngle: Degrees, endAngle: Degrees) {
   def asSvg(arcWidth: Int, color: String, pathId: String, label: String) = {
     val startX = center.x + (radius * Math.cos(endAngle.asRadians))
@@ -35,7 +43,7 @@ case class Arc(center: Point, radius: Int, startAngle: Degrees, endAngle: Degree
         fill        := "none"
       ),
       text(fontSize := 20)(
-        textPath(xLinkHref := s"#${pathId}", stags.attr("startOffset") := "10%")(label)
+        textPath(xLinkHref := s"#${pathId}", stags.attr("startOffset") := "35%")(label)
       )
     )
   }

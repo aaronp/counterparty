@@ -11,7 +11,7 @@ case class ActorConfig(
     // how big of a gap should we have between categories
     categoryGap: Degrees = 5.degrees,
     // how thick is the category arch?
-    categoryThickness: Int = 250
+    categoryThickness: Int = 200
 ):
   def fullHeight = labelYOffset + estimatedTextHeight
 end ActorConfig
