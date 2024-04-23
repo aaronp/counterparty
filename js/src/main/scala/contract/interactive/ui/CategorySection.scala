@@ -76,18 +76,18 @@ case class CategorySection(
     category: String,
     actorsInThisCategory: Seq[Actor],
     color: String,
-    start: Degrees,
-    end: Degrees,
+    arcStart: Degrees,
+    arcEnd: Degrees,
     config: Config
 ) {
-  require(end.toDouble > start.toDouble)
+  require(arcEnd.toDouble > arcStart.toDouble)
 
   private def centerPointWithActor = actorsInThisCategory.zipWithIndex.flatMap { case (actor, i) =>
     // the gaps between the actors in this category are the angle between the start and end of the category divided by the number of actors
-    val angleStepSize = (end - start) / (actorsInThisCategory.size + 1)
+    val angleStepSize = (arcEnd - arcStart) / (actorsInThisCategory.size + 1)
 
     actorsInThisCategory
-      .foldLeft(start -> Seq.empty[(Point, Actor)]) { case ((angle, acc), actor) =>
+      .foldLeft(arcStart -> Seq.empty[(Point, Actor)]) { case ((angle, acc), actor) =>
         val next = angle + angleStepSize
         val x    = config.center.x + config.radius * Math.cos(next.asRadians)
         val y    = config.center.y + config.radius * Math.sin(next.asRadians)
@@ -100,37 +100,15 @@ case class CategorySection(
   }
 
   def actorComponents: Seq[TypedTag[String]] = {
-    var offset = start
 
-    val steps = 10
-    val step  = (end - start) / steps
-    val items = ListBuffer[TypedTag[String]]()
+    val steps         = actorsInThisCategory.size
+    val step: Degrees = (arcEnd - arcStart) / (actorsInThisCategory.size + 1)
 
-    (0 to steps).foreach { i =>
+    actorsInThisCategory.zipWithIndex.map { case (actor, i) =>
+      val offset = arcStart + (step * (i + 1))
 
-      val x = config.center.x + config.radius * Math.cos(offset.asRadians)
-      val y = config.center.y + config.radius * Math.sin(offset.asRadians)
-
-      offset += step
-      val item = g(
-        stags.text(
-          fill             := "white",
-          stroke           := "black",
-          textAnchor       := "middle",
-          dominantBaseline := "middle",
-          transform        := s"translate($x,$y)"
-        )(offset.toInt.toString())
-      )
-
-      items += item
-    }
-
-    items.toList
-  }
-
-  def actorComponentsFucked: Seq[TypedTag[String]] = centerPointWithActor.map {
-    case (point, actor) =>
-      val (x, y)  = (point.x, point.y)
+      val x       = config.center.x + config.radius * Math.cos(offset.asRadians)
+      val y       = config.center.y + config.radius * Math.sin(offset.asRadians)
       val yOffset = y + config.actorConfig.labelYOffset
 
       g(
@@ -147,13 +125,14 @@ case class CategorySection(
           transform        := s"translate($x,$yOffset)"
         )(s"${actor.label}")
       )
+    }
   }
 
   def backgroundArcComponents: Seq[TypedTag[String]] = {
 
     val thickness = config.actorConfig.categoryThickness
 
-    val backgroundArc = Arc(config.center, config.radius, start, end)
+    val backgroundArc = Arc(config.center, config.radius, arcStart, arcEnd)
       .asSvg(
         thickness,
         color,
@@ -163,12 +142,12 @@ case class CategorySection(
 
     // draw a second arc for the label on the outside (e.g. radius + half the thickness + 20 pixels)
     val labelRadius = config.radius + thickness / 2 + config.actorConfig.estimatedTextHeight
-    val labelArc = Arc(config.center, labelRadius, start, end)
+    val labelArc = Arc(config.center, labelRadius, arcStart, arcEnd)
       .asSvg(
         1,
         "white",
         s"arclabel-${category.filter(_.isLetterOrDigit)}",
-        s"$category from $start to $end"
+        f"$category from $arcStart%.2f to $arcEnd%.2f"
       )
     Seq(backgroundArc, labelArc)
   }
