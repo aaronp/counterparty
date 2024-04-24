@@ -1,13 +1,15 @@
-//> using scala "3.3.1"
-//> using lib "counterparty.service::counterparty-service:0.0.1-SNAPSHOT"
+//> using scala "3.4.0"
+//> using lib "com.github.aaronp::counterparty:0.0.1-SNAPSHOT"
 //> using repositories https://maven.pkg.github.com/aaronp/counterparty
 
 package contract.server
 
+import contract.model.*
+import contract.api.*
+import contract.*
 import contract.DraftContract
-import counterparty.service.server.api.*
-import counterparty.service.server.model.SignDraftContractRequest
-import counterparty.service.server.{BaseApp, model}
+import contract.handler.SignContractHandler
+import contract.handler.CreateDraftHandler
 
 /** this is our business logic for our REST service.
   *
@@ -18,8 +20,8 @@ import counterparty.service.server.{BaseApp, model}
   *   the business logic for signing
   */
 class Service(
-    draftLogic: CreateDraftHandler = CreateDraftHandler.InMemory(),
-    signLogic: SignContractHandler = SignContractHandler.InMemory()
+    draftLogic: CreateDraftHandler = contract.handler.CreateDraftHandler.InMemory(),
+    signLogic: SignContractHandler = contract.handler.SignContractHandler.InMemory()
 ) extends DefaultService {
   override def createContract(request: DraftContract) = {
     draftLogic.run(request).execOrThrow()
@@ -29,5 +31,5 @@ class Service(
 }
 
 /** our main entry point */
-object Server extends BaseApp(appDefaultService = Service()):
+object Server extends com.github.aaronp.server.BaseApp(appDefaultService = Service()):
   start()

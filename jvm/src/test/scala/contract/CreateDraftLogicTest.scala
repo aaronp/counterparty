@@ -1,7 +1,6 @@
 package contract
 
-import contract.server.*
-import counterparty.service.server.model.CreateDraftResponse
+import contract.service.server.model.CreateDraftResponse
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

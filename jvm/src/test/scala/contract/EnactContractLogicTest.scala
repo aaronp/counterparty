@@ -1,7 +1,6 @@
 package contract
 
-import contract.server.*
-import counterparty.service.server.model.{SignDraftContract200Response, SignDraftContractRequest}
+import contract.service.server.model.{SignDraftContract200Response, SignDraftContractRequest}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

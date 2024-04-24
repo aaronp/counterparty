@@ -1,5 +1,8 @@
-artifactId: counterparty
+artifactId: contract
+artifactVersion: "0.3.0"
 groupId: "com.github.aaronp"
-package: "example.counterparty"
+packageName: "contract"
+modelPackage: "contract.model"
+apiPackage: "contract.api"
 gitRepoId: "counterparty"
 gitUserId: "aaronp"

@@ -51,16 +51,16 @@ package: packageRestCode
 
 # packages up / publishes locally (to .ivy) the REST stubs
 testRestCode: generateRestCode
-	cd $(REST_STUBS_LOCATION) && sbt --warn testRestCode
+	cd $(REST_STUBS_LOCATION) && sbt testRestCode
 
 # packages up / publishes locally (to .ivy) the REST stubs
 packageRestCode: generateRestCode
-	cd $(REST_STUBS_LOCATION) && sbt --warn publishLocal
+	cd $(REST_STUBS_LOCATION) && sbt publishLocal
 
 # generate the REST services from our ./service.yaml into a target directory
 generateRestCode:
 	# there are often changes to the scala-cask template, so it's useful to pull when needed:
-	# docker pull openapitools/openapi-generator-cli:latest
+	docker pull openapitools/openapi-generator-cli:latest
 	docker run --rm -v ${PWD}:/local openapitools/openapi-generator-cli:latest generate \
         -i /local/service.yaml \
         -g scala-cask \

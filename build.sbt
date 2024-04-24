@@ -2,14 +2,18 @@ import org.scalajs.linker.interface.ModuleSplitStyle
 
 ThisBuild / name := "contracts"
 ThisBuild / organization := "demo.rest"
-ThisBuild / version := "0.0.1"
+ThisBuild / version := "0.0.7"
 ThisBuild / scalaVersion := "3.4.1"
 ThisBuild / scalafmtOnCompile := true
+ThisBuild / versionScheme := Some("early-semver")
+
 
 // Common settings
 lazy val commonSettings = Seq(
   buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
   buildInfoPackage := "counterparties.buildinfo",
+  // this is our model libraries, generated from the service.yaml and created/publised via 'make packageRestCode'
+  libraryDependencies += "com.github.aaronp" %%% "contract" % "0.0.3",
   libraryDependencies ++= Seq(
     "dev.zio" %%% "zio" % "2.0.22",
     "org.scalatest" %%% "scalatest" % "3.2.18" % Test,
@@ -23,8 +27,7 @@ lazy val app = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   settings(commonSettings).
   jvmSettings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "cask" % "0.9.2",
-      "counterparty.service" %%% "counterparty-service" % "0.0.1-SNAPSHOT")
+      "com.lihaoyi" %% "cask" % "0.9.2")
   ).
   jsSettings(
     scalaJSUseMainModuleInitializer := true,
