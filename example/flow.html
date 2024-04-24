@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mermaid Graph Renderer</title>
+    <!--
+
+        https://mermaid.js.org/config/usage.html
+
+        See https://codepen.io/123unme/pen/BQwZzq
+
+        see https://mermaid.js.org/config/usage.html?id=usage
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    -->
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <!-- Textarea to define the graph -->
+    <h2>Define Your Graph</h2>
+    <textarea id="graphInput" rows="10" cols="50">
+        graph TB
+        A[103,032] --> |Accept John's Offer| B[12,000]
+        A ==> |Reject John's Offer |C(($13,032))
+        C --> |Offer from Vanessa 0.6| D[$14,000]
+        D ==> |Accept Vanessa's Offer| E[$14,000]
+        D --> |Reject Vanessa's Offer| F(($11,580))
+        C --> |No Offer from Vanessa 0.4| G(($11,580))
+        G --> |Salary 1 0.05| H[$21,600]
+        G --> |Salary 2 0.25| I[$16,800]
+        G --> |Salary 3 0.40| J[$12,800]
+        G --> |Salary 4 0.25| K[$6,000]
+        G --> |Salary 5 0.05| L[$0]
+        F --> |Salary 1 0.05| M[$21,600]
+        F --> |Salary 2 0.25| N[$16,800]
+        F --> |Salary 3 0.40| O[$12,800]
+        F --> |Salary 4 0.25| P[$6,000]
+        F --> |Salary 5 0.05| Q[$0]
+    </textarea>
+    <div>
+
+    <!-- <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
+      </script> -->
+    <!-- Button to trigger rendering -->
+    <br>
+    <button id="renderButton">Render Graph</button>
+
+    <div id="parent">
+
+    </div>
+
+    <div class="mermaid target" id="target">
+        graph TB
+          A[103,032] --> |Accept John's Offer| B[12,000]
+          A ==> |Reject John's Offer |C(($13,032))
+          C --> |Offer from Vanessa 0.6| D[$14,000]
+          D ==> |Accept Vanessa's Offer| E[$14,000]
+          D --> |Reject Vanessa's Offer| F(($11,580))
+          C --> |No Offer from Vanessa 0.4| G(($11,580))
+          G --> |Salary 1 0.05| H[$21,600]
+          G --> |Salary 2 0.25| I[$16,800]
+          G --> |Salary 3 0.40| J[$12,800]
+          G --> |Salary 4 0.25| K[$6,000]
+          G --> |Salary 5 0.05| L[$0]
+          F --> |Salary 1 0.05| M[$21,600]
+          F --> |Salary 2 0.25| N[$16,800]
+          F --> |Salary 3 0.40| O[$12,800]
+          F --> |Salary 4 0.25| P[$6,000]
+          F --> |Salary 5 0.05| Q[$0]
+      </div>
+
+    <script>
+        // Function to render the graph
+        function renderGraph() {
+
+            const graphDefinition = document.getElementById('graphInput').value;
+
+            document.getElementById('target').innerHTML = '';
+
+            const parent = document.getElementById('parent');
+            parent.innerHTML = "";
+
+            const newChildDiv = document.createElement('div');
+            newChildDiv.textContent = graphDefinition;
+
+            parent.appendChild(newChildDiv);
+
+
+            mermaid.initialize({ startOnLoad: false });
+            var future = mermaid.run({
+               nodes: [newChildDiv],
+               suppressErrors: false,
+            });
+
+            future.then(() => {
+              console.log('Rendered!');
+            });
+        }
+
+        // Set up the button click event to call renderGraph
+        document.getElementById('renderButton').addEventListener('click', renderGraph);
+
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-package free.examples.etl.ui
+package contract.js
 
 import org.scalajs.dom.html.{Div, Input, TableRow}
 import org.scalajs.dom.{MouseEvent, Node, document, window}

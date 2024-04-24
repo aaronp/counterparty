@@ -24,12 +24,12 @@ object CreateDraftLogic:
     *   the business logic for creating a draft contract
     */
   def apply(draft: DraftContract) = for {
-    _  <- LogMessage(s"Saving draft $draft").free
-    id <- StoreDraftInDatabase(draft).free
-    _  <- LogMessage(s"Saved draft ${id}").free
+    _  <- LogMessage(s"Saving draft $draft").asProgram
+    id <- StoreDraftInDatabase(draft).asProgram
+    _  <- LogMessage(s"Saved draft ${id}").asProgram
     contract = Contract(draft, id)
-    refA <- NotifyCounterpartyA(contract).free
-    refB <- NotifyCounterpartyB(contract).free
+    refA <- NotifyCounterpartyA(contract).asProgram
+    refB <- NotifyCounterpartyB(contract).asProgram
     response = CreateDraftResponse(Option(refA.code), Option(refB.code))
-    _ <- LogMessage(s"Returning $response").free
+    _ <- LogMessage(s"Returning $response").asProgram
   } yield response

@@ -22,6 +22,15 @@ lazy val commonSettings = Seq(
   )
 )
 
+ThisBuild / scalacOptions ++= Seq(
+  "-deprecation",
+  "-feature",
+  "-unchecked",
+  "-rewrite",//-rewrite -source 3.4-migration
+  "-Xlint",
+  "-Xsource:3.4"
+)
+
 lazy val app = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   enablePlugins(BuildInfoPlugin).
   settings(commonSettings).

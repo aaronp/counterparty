@@ -7,11 +7,11 @@ case class ActorConfig(
     // how big is the text size do we think (hack for laying out actors in a circle)
     estimatedTextHeight: Int = 20,
     // how much should we scale the emoji icons?
-    iconScale: Int = 4,
+    iconScale: Int = 3,
     // how big of a gap should we have between categories
     categoryGap: Degrees = 5.degrees,
     // how thick is the category arch?
-    categoryThickness: Int = 200
+    categoryThickness: Int = 180
 ):
   def fullHeight = labelYOffset + estimatedTextHeight
 end ActorConfig
@@ -28,7 +28,7 @@ case class Config(
   def radius     = (width.min(height) - padding - actorConfig.fullHeight) / 2
 
 object Config:
-  def docWidth          = dom.window.innerWidth.toInt
-  def docHeight         = dom.window.innerHeight.toInt
-  def default(): Config = new Config(docWidth, docHeight, 300)
+  def docHeight         = dom.window.innerHeight * 0.8
+  def docWidth          = dom.window.innerWidth * 0.8
+  def default(): Config = new Config(docWidth.toInt, docHeight.toInt, 300)
 end Config

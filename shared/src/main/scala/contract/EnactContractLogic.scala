@@ -43,12 +43,13 @@ trait EnactContract {
       }
     }
 
-    def apply[T](request: SignContract) = for {
-      _                           <- LogMessage("Signing contracts").free
-      processA                    <- RequestSignatureA(CounterpartyRef(request.referenceA)).free
-      processB                    <- RequestSignatureB(CounterpartyRef(request.referenceB)).free
-      signatureA: SignatureResult <- Wait(processA).free
-      signatureB                  <- Wait(processB).free
-    } yield asResult(signatureA, signatureB)
+    def apply[T](request: SignContract): Program[EnactContractLogic, SignDraftContract200Response] =
+      for {
+        _        <- LogMessage("Signing contracts").asProgram
+        processA <- RequestSignatureA(CounterpartyRef(request.referenceA)).asProgram
+        processB <- RequestSignatureB(CounterpartyRef(request.referenceB)).asProgram
+        signatureA: SignatureResult <- Wait(processA).asProgram
+        signatureB                  <- Wait(processB).asProgram
+      } yield asResult(signatureA, signatureB)
 
 }

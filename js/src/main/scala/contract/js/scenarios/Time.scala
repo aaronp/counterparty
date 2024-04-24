@@ -1,4 +1,4 @@
-package free.examples.etl
+package contract.js.scenarios
 
 import org.scalajs.dom.html.Div
 import org.scalajs.dom.{MouseEvent, window}
@@ -8,19 +8,8 @@ import scalatags.JsDom.all.*
 import java.time.format.DateTimeFormatter
 import concurrent.duration.*
 import java.time.{ZoneId, ZonedDateTime}
-package object ui {
 
-  def newInput(label: String, initialValue: String = ""): Input =
-    val inputId = label.filter(_.isWhitespace)
-    input(`type` := "text", `id` := s"input-$inputId", `value` := initialValue)(label).render
-
-  def newRow(inp: Input): Div =
-    div(`class` := "row")(
-      div(`class` := "col-25")(
-        label(`for` := inp.id)(inp.innerText)
-      ),
-      div(`class` := "col-75")(inp)
-    ).render
+object Time:
 
   private def parseDate(d8: String) = d8.toUpperCase match {
     case s"$year-$month-${date}T${hr}:$min:$sec.${millis}Z[$zoneName]" =>
@@ -67,4 +56,3 @@ package object ui {
       window.alert(s"Couldn't parse '$other' as a duration")
       0.seconds
   }
-}

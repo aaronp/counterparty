@@ -5,26 +5,52 @@ import scalatags.JsDom.tags2
 import scalatags.JsDom.all._
 import org.scalajs.dom.document
 import org.scalajs.dom.HTMLLIElement
+import contract.js.scenarios.ScenariosElement
 
-object Material:
+object Material {
+  def initSelect(): Unit = scalajs.js.Dynamic.global.M.FormSelect.init {
+    document.querySelectorAll("select")
+  }
 
-  enum ActiveTab:
-    case Flow, Scenarios, Interactive, Diff, REST
+  def initModal() = scalajs.js.Dynamic.global.M.Modal.init {
+    document.querySelectorAll(".modal")
+  }
 
-end Material
+  def initTextArea() = scalajs.js.Dynamic.global.M.textarea.init {
+    document.querySelectorAll("textarea")
+  }
 
+  def init() = {
+    initSelect()
+    initModal()
+  }
+
+}
+
+/** This is the base of our application.
+  */
 case class Material() {
 
-  import Material.*
+  // see https://materializecss.com/select.html  about having to initialise
+  // we have to initialise some garbase. Love web development 🫶🫶🫶
+  locally {
+    dom.document.addEventListener(
+      "DOMContentLoaded",
+      (e: dom.Event) => Material.init()
+    )
+  }
 
-  private val tabListItemPairs: Seq[(ActiveTab, HTMLLIElement)] = ActiveTab.values.map { t =>
-    val tabListItem =
-      li(cls := (if t == ActiveTab.Flow then "active" else ""), a(href := "#", t.toString())).render
-    tabListItem.onclick = (e: dom.MouseEvent) => {
-      e.preventDefault()
-      refreshTabs(t)
+  private val tabListItemPairs: Seq[(ActiveTab, HTMLLIElement)] = {
+    val current = LocalState.currentTab
+    ActiveTab.values.map { t =>
+      val tabListItem =
+        li(cls := (if t == current then "active" else ""), a(href := "#", t.toString())).render
+      tabListItem.onclick = (e: dom.MouseEvent) => {
+        e.preventDefault()
+        refreshTabs(t)
+      }
+      t -> tabListItem
     }
-    t -> tabListItem
   }
 
   private val tabListItems = tabListItemPairs.map(_._2)
@@ -35,24 +61,26 @@ case class Material() {
     case ActiveTab.Flow =>
       div("Flow, baby!").render
     case ActiveTab.Scenarios =>
-      div("Scenarios, baby!").render
-    case ActiveTab.Interactive =>
-      div("Interactive, baby!").render
+      ScenariosElement().render
+    case ActiveTab.Interactive => TestData.interactive
     case ActiveTab.REST =>
       div("REST, baby!").render
     case ActiveTab.Diff =>
       div("Diff, baby!").render
   }
   private def refreshTabs(t: ActiveTab) = {
+    LocalState.currentTab = t
     tabListItemPairs.foreach {
       case (`t`, tabListItem) => tabListItem.classList.add("active")
       case (_, tabListItem)   => tabListItem.classList.remove("active")
     }
     contentWrapper.innerHTML = ""
     contentWrapper.appendChild(bodyForTab(t))
+
+    Material.initTextArea()
   }
 
-  private val contentWrapper = div().render
+  private val contentWrapper = div(bodyForTab(LocalState.currentTab)).render
 
 // Define the content with Scalatags
   val content = {
@@ -73,7 +101,6 @@ case class Material() {
       // Main content
       div(
         cls := "container",
-        h1("Welcome to the App"),
         contentWrapper
       )
     )

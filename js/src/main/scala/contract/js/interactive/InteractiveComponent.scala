@@ -14,7 +14,7 @@ object InteractiveComponent {
 
     val tooltip = div(
       id := "tooltip",
-      style := "display: none; position: absolute; width:500px; height: 500px; background: lightgrey; border: 1px solid black; margin: 5px; padding: 5px; text-align:left"
+      style := "display: none; position: absolute; width:500px; height: 500px; background: black; border: 1px solid black; margin: 5px; padding: 5px; text-align:left"
     ).render
     def onClick(e: dom.MouseEvent, messageOpt: Option[MessageLayout.RenderedMessage]) =
       messageOpt match {
