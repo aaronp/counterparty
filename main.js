@@ -1,21 +1,20 @@
 import './style.css'
 import 'scalajs:main.js'
 import mermaid from 'mermaid';
+// import 'golden-layout/dist/css/goldenlayout-base.css';
+// import 'golden-layout/dist/css/themes/goldenlayout-dark-theme.css';
 
-  function renderMermaid(targetElm) {
-    console.log("rendering " + targetElm);
-    
-    mermaid.initialize({ startOnLoad: false });
-    var future = mermaid.run({
-       nodes: [targetElm],
-       suppressErrors: false,
-    });
 
-    future.then(() => {
-      console.log('Rendered!');
-    });
-  }
+/** We call this from MermaidPage, sending it a new element which contains mermaid markdown  */
+function renderMermaid(targetElm) {
+  mermaid.initialize({ startOnLoad: false });
+  mermaid.run({
+    nodes: [targetElm],
+    suppressErrors: false,
+  }).then(() => {
+    console.log('Rendered mermaid diagram');
+  });
+}
 
-  window.renderMermaid = renderMermaid;
-
-  export default { renderMermaid };
+window.renderMermaid = renderMermaid;
+export default { renderMermaid };

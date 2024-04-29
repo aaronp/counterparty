@@ -3,13 +3,87 @@
   line-height: 1.5;
   font-weight: 400;
 
-  /* color-scheme: light dark; */
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 }
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+header {
+  height: 100px;
+  background-color: #f4f4f4;
+  text-align: center;
+  line-height: 100px;
+}
+footer {
+  height: 20px;
+  background-color: #ccc;
+  text-align: center;
+  line-height: 20px;
+}
+.content {
+  display: flex;
+  height: calc(100% - 120px); /* Subtract header and footer height */
+}
+.drawer {
+  width: 200px;
+  background-color: #ddd;
+  /* Fixed height takes remaining height minus header and footer */
+  height: calc(100vh - 120px);
+}
+#layoutContainer {
+  flex-grow: 1;
+  height: 100%;
+}
+ul {
+  margin-left: 6px;
+  padding: 0;
+}
+.draggable {
+  width: 180px;
+  height: 60px;
+  margin-bottom: 10px;
+  background-color: black;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #000;
+  cursor: grab; /* Cursor shows a grab hand */
+}
+.draggable:active {
+  cursor: grabbing; /* Cursor shows a grabbing hand */
+}
+
+.subtitle {
+  color: white;
+}
+
+/* out own material design */
+.btn {
+  background-color: #2196F3; /* Default blue background */
+  color: #fff; /* White text */
+  padding: 0 16px; /* Padding on the sides */
+  margin: 0 8px;
+}
+
+.big-input {
+  margin: 10px;
+  width: calc(100vh - 20px);
+}
+.label {
+  margin: 10px;
+  font-size: 1.5em;
+  color: white;
+}
+
+.modal { display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+.modal-content { background: grey; padding: 20px; border-radius: 5px; }
+.modal-show { display: block; position: absolute; left: calc(10vw); top: calc(20vh)}
+.btn { padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }

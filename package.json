@@ -13,6 +13,8 @@
     "vite": "^4.1.0"
   },
   "dependencies": {
+    "golden-layout": "^2.6.0",
+    "jquery": "^3.7.1",
     "mermaid": "^10.9.0"
   }
 }

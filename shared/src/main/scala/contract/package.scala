@@ -1,6 +1,7 @@
 import contract.model.*
 
 import java.util.UUID
+import zio.{Runtime, Task, Unsafe}
 
 /** In this example, we're representing the flow of a microservice responsible for contracts.
   *
@@ -48,6 +49,13 @@ import java.util.UUID
   * }}}
   */
 package object contract {
+
+  /** A common convenience method for ZIO stuff... might as well stick it here
+    */
+  extension [A](job: Task[A])
+    def execOrThrow(): A = Unsafe.unsafe { implicit unsafe =>
+      Runtime.default.unsafe.run(job).getOrThrowFiberFailure()
+    }
 
   // for readability (and type-checking, and flexibility), we'll create some type-aliases.
   // this will help the compiler enforce correctness rather than us having to write additional tests

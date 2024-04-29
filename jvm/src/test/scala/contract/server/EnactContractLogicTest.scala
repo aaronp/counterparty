@@ -1,6 +1,6 @@
-package contract
+package contract.server
 
-import contract.service.server.model.{SignDraftContract200Response, SignDraftContractRequest}
+import contract.handler.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

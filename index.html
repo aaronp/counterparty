@@ -5,9 +5,64 @@
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Contract Example</title>
+    <link rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-base.css">
+    <link rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css">
+    
+
+    <!-- weird .. these are brought in my our main.js module (npm), but we have to include here.
+         oh well .... the interweb is a mystery to me.    
+    -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://golden-layout.com/files/latest/js/goldenlayout.min.js"></script>
   </head>
   <body>
-    <div id="app"></div>
+    
     <script type="module" src="/main.js"></script>
+    <header>Header</header>
+    <div class="content">
+        <div class="drawer" ><ul id="drawer" /></div>
+        <div id="layoutContainer"></div>
+    </div>
+    <footer>Footer</footer>
+    <script>
+        var config = {
+            content: [{
+                type: 'row',
+                content: [{
+                    type: 'component',
+                    title: "🏗️ Scenario Builder",
+                    componentName: 'createScenarioBuilder',
+                    componentState: { label: 'B' }
+                }]
+            }]
+        };
+    
+        var myLayout = new GoldenLayout(config, document.getElementById('layoutContainer'));
+        myLayout.registerComponent('createScenarioBuilder', function(container, state) {
+            createScenarioBuilder(container, state);
+        });
+        myLayout.registerComponent('createSequenceDiagram', function(container, state) {
+          createSequenceDiagram(container, state);
+        });
+        myLayout.registerComponent('createInteractivePage', function(container, state) {
+          createInteractivePage(container, state);
+        });
+        myLayout.registerComponent('createDiffPage', function(container, state) {
+          createDiffPage(container, state);
+        });
+
+        myLayout.on('itemDestroyed', function(item) {
+            if (item.type === 'component') {
+              onComponentDestroyed(item.config.componentName);
+            }
+        });
+        myLayout.on('itemCreated', function(item) {
+          if (item.config.componentName != undefined) {
+            onComponentCreated(item.config.componentName);
+          }
+        });
+
+        myLayout.init();
+    </script>
   </body>
 </html>
