@@ -17,14 +17,18 @@ html, body {
 }
 header {
   height: 100px;
-  background-color: #f4f4f4;
-  text-align: center;
+  background-color: black;
+  color: white;
+  text-align: left;
+  padding-left: 40px;
   line-height: 100px;
 }
 footer {
   height: 20px;
-  background-color: #ccc;
-  text-align: center;
+  background-color: black;
+  color: white;
+  text-align: left;
+  padding-left: 4px;
   line-height: 20px;
 }
 .content {
