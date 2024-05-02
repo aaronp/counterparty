@@ -8,6 +8,7 @@ import ujson.Value
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
+import contract.js.TestScenario
 
 @js.native
 @JSGlobal("renderMermaid")
@@ -15,31 +16,21 @@ object RenderMermaid extends js.Object {
   def apply(targetElm: Node): Unit = js.native
 }
 
-case class MermaidPage(initialGraphData: String = "graph TD; A-->B; A-->C; B-->D; C-->D;") {
+case class MermaidPage() {
 
-  private def defaultJason: Value = ujson.read(DraftContract.testData.asData.asJson)
+  private val titleDiv = div().render
 
-  val graphDefinition = """
-  graph TD;
-  A-->B;
-  A-->C;
-  B-->D;
-  C-->D;
-"""
+  def update(scenario: TestScenario, newMarkdown: String) = {
+    titleDiv.innerHTML = s"Mermaid diagram for ${scenario.name}"
+    renderDiagram(newMarkdown)
+  }
 
-  // Create the text area for Mermaid markup
-  private val textArea = textarea(
-    id   := "mermaidInput",
-    rows := 6,
-    cols := 50,
-    initialGraphData
-  ).render
-
-  // Create a button to render the diagram
-  private val renderButton = button(
-    "Render Diagram",
-    onclick := (() => renderDiagram())
-  ).render
+  /** We couldn't parse the scenario
+    */
+  def updateError(scenario: TestScenario, errorMessage: String) = {
+    titleDiv.innerHTML = s"Failed to unmarshal the test data for ${scenario.name}"
+    updateDiagramComment(errorMessage)
+  }
 
   // Create a div to display the diagram
   private val diagramDiv = div(
@@ -50,26 +41,20 @@ case class MermaidPage(initialGraphData: String = "graph TD; A-->B; A-->C; B-->D
   ).render
 
   // Append the elements to the body
-  def element = {
-    div(
-      h1("Mermaid Diagram Renderer"),
-      p("Enter Mermaid markup below to render a diagram."),
-      textArea,
-      renderButton,
-      diagramDiv
-    ).render
+  def element = div(style := "background-color: white", diagramDiv).render
+
+  private def renderDiagram(markdown: String): Unit = {
+    val newTargetNode = updateDiagramComment(markdown)
+    RenderMermaid(newTargetNode)
   }
 
-  def renderDiagram(): Unit = {
-    val input = dom.document.getElementById("mermaidInput").asInstanceOf[dom.html.TextArea].value
+  private def updateDiagramComment(content: String) = {
     diagramDiv.innerHTML = ""
 
     val newTargetNode = dom.document.createElement("div")
     newTargetNode.setAttribute("id", "diagram")
-    newTargetNode.textContent = textArea.value
+    newTargetNode.textContent = content
     diagramDiv.appendChild(newTargetNode)
-
-    RenderMermaid(newTargetNode)
-
+    newTargetNode
   }
 }

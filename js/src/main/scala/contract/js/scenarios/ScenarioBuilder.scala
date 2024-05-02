@@ -14,7 +14,7 @@ import contract.js.TestScenario
 import org.scalajs.dom.HTMLParagraphElement
 import scala.util.chaining.*
 
-case class ScenarioBuilder() extends contract.js.Page {
+case class ScenarioBuilder() {
 
   private def onDelete() = {
     LocalState.removeScenario(selectInput.value)
@@ -162,7 +162,7 @@ case class ScenarioBuilder() extends contract.js.Page {
     jsonInput.value = scenario.input.render(2)
   }
 
-  override val content = {
+  val content = {
     div(
       selectInputDiv,
       div(jsonInput),

@@ -31,13 +31,13 @@ class EventBus[A] {
 object EventBus {
 
   // published when tabs are opened
-  val tabOpen = new EventBus[Components]
+  val tabOpen = new EventBus[UIComponent]
 
   // published when tabs are closed
-  val tabClosed = new EventBus[Components]
+  val tabClosed = new EventBus[UIComponent]
 
   // published when the active set of tabs changes
-  val activeTabs = new EventBus[Set[Components]]
+  val activeTabs = new EventBus[Set[UIComponent]]
 
   // publishes when the active test scenario changes
   val activeTestScenario = new EventBus[TestScenario]

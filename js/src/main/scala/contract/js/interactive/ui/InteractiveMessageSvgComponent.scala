@@ -32,9 +32,7 @@ class InteractiveMessageSvgComponent(
   private var timeSliderMouseDown = false
 
   // how fast should we play?
-  private var playIncrement = 200
-
-  private val animationRefreshRate = 20.millis
+  import config.{playIncrement, animationRefreshRate}
 
   private val containerDiv = div(width := config.width).render
 
