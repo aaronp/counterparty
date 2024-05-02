@@ -23,13 +23,35 @@ object CreateDraftLogic:
     * @return
     *   the business logic for creating a draft contract
     */
-  def apply(draft: DraftContract) = for {
-    _  <- LogMessage(s"Saving draft $draft").asProgram
-    id <- StoreDraftInDatabase(draft).asProgram
-    _  <- LogMessage(s"Saved draft ${id}").asProgram
-    contract = Contract(draft, id)
-    refA <- NotifyCounterpartyA(contract).asProgram
-    refB <- NotifyCounterpartyB(contract).asProgram
-    response = CreateDraftResponse(Option(refA.code), Option(refB.code))
-    _ <- LogMessage(s"Returning $response").asProgram
-  } yield response
+  def apply(draft: DraftContract): Program[CreateDraftLogic, Either[String, CreateDraftResponse]] =
+    validateDraft(draft) match {
+      case Some(err) =>
+        for {
+          log <- LogMessage(s"Validation failed: $err").asProgram
+        } yield Left(err)
+      case None =>
+        for {
+          _  <- LogMessage(s"Saving draft $draft").asProgram
+          id <- StoreDraftInDatabase(draft).asProgram
+          contract = Contract(draft, id)
+          _    <- LogMessage(s"Saved draft ${id}").asProgram
+          refA <- NotifyCounterpartyA(contract).asProgram
+          refB <- NotifyCounterpartyB(contract).asProgram
+          response = CreateDraftResponse(Option(refA.code), Option(refB.code))
+          _ <- LogMessage(s"Returning $response").asProgram
+        } yield Right(response)
+    }
+
+  private def validateDraft(draft: DraftContract) = {
+    if (draft.conditions.trim.isEmpty()) {
+      Some("Draft has no conditions")
+    } else if (draft.terms.trim.isEmpty()) {
+      Some("Draft has no terms")
+    } else if (draft.firstCounterparty.trim.isEmpty()) {
+      Some("The first counterparty is empty")
+    } else if (draft.secondCounterparty.trim.isEmpty()) {
+      Some("The second counterparty is empty")
+    } else {
+      None
+    }
+  }

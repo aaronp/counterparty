@@ -1,5 +1,5 @@
 package contract.js.interactive.ui
-
+import scala.concurrent.duration.*
 import org.scalajs.dom
 case class ActorConfig(
     // how much further down should the actor labels be from the actor icon?
@@ -21,7 +21,9 @@ case class Config(
     height: Int,
     padding: Int,
     svgStyle: String = "background-color: white;",
-    actorConfig: ActorConfig = ActorConfig()
+    actorConfig: ActorConfig = ActorConfig(),
+    playIncrement: Int = 20,
+    animationRefreshRate: Duration = 40.millis
 ):
   def fullHeight = height + padding + actorConfig.fullHeight
   def center     = Point(width / 2, height / 2)

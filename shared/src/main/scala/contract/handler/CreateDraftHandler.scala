@@ -37,7 +37,8 @@ trait CreateDraftHandler {
   }
 
   // handles the draft contract
-  def run(draft: DraftContract): Task[CreateDraftResponse] = CreateDraftLogic(draft).foldMap[Task]
+  def run(draft: DraftContract): Task[Either[String, CreateDraftResponse]] =
+    CreateDraftLogic(draft).foldMap[Task]
 
   /* This given (implicit) allows us to call 'foldLeft' on our logic
    */

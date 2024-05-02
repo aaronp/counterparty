@@ -23,7 +23,7 @@ object CreateDraftAsMermaid {
   given ~>[CreateDraftLogic, CallsState] with
     def apply[A](op: CreateDraftLogic[A]): State[Calls, A] = op match {
       case StoreDraftInDatabase(draft) =>
-        val result = DraftContractId("contract-id")
+        val result = DraftContractId(s"contract for ${draft.terms}")
         List(
           s"$ContractService->>$Database: save draft",
           s"$Database-->>$ContractService: returns $result"

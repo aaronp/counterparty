@@ -2,14 +2,16 @@ package contract.js
 
 import concurrent.duration.{given, *}
 import ujson.*
+import _root_.contract.*
 import java.util.EventListener
+import CreateDraftLogic.*
 
 package object interactive {
 
   type Json = Value
 
   enum ActorType:
-    case Person, Database, Queue, Email, Service
+    case Person, Database, Queue, Email, Service, Job
 
     def icon = this match
       case Person   => "👤"
@@ -17,6 +19,7 @@ package object interactive {
       case Queue    => "📤"
       case Email    => "📧"
       case Service  => "🖥️"
+      case Job      => "🤖"
 
   /** This is to represent the actors in a system. The people and things which send messsages and
     * data to each other
@@ -33,6 +36,7 @@ package object interactive {
     def person(category: String, label: String)   = Actor(ActorType.Person, category, label)
     def database(category: String, label: String) = Actor(ActorType.Database, category, label)
     def queue(category: String, label: String)    = Actor(ActorType.Queue, category, label)
+    def job(category: String, label: String)      = Actor(ActorType.Job, category, label)
     def email(category: String, label: String)    = Actor(ActorType.Email, category, label)
     def service(category: String, label: String)  = Actor(ActorType.Service, category, label)
 
@@ -101,4 +105,28 @@ package object interactive {
           messages.foldLeft(new EventLog(Vector.empty, Set.empty, 0, 0)) { case (log, msg) =>
             log.add(msg)
           }
+
+  // convenience data structure for folding over our operations
+  case class FoldData(messages: Seq[SendMessage]) {
+    def latestTime = messages.map(_.endTimestamp).max
+    // def offset(delta: Int)     = copy(timestamp = timestamp + delta)
+    // def delta(other: FoldData) = (timestamp - other.timestamp).abs
+    def asState[A](result: A): State[FoldData, A] =
+      State.combine[FoldData, A](this, result)
+  }
+  object FoldData {
+    def apply(first: SendMessage, messages: SendMessage*) = new FoldData(first +: messages.toSeq)
+    given Semigroup[FoldData] with {
+      // TODO - here where we combine, we need to offset all messages by some
+      // delta so that they are all in the same time frame
+      override def combine(x: FoldData, y: FoldData) =
+        new FoldData(x.messages ++ y.messages)
+    }
+  }
+
+  enum Category:
+    case ContractSystem, CounterpartyA, CounterpartyB
+
+  type FoldState[A] = State[FoldData, A]
+
 }

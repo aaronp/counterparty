@@ -15,9 +15,11 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 
 /** TODO:
   * {{{
-  * $ Mermaid which is driven by test scenarios, and auto-resizes: dynamic resizing (using ResizeObserver ?)
-  * $ Interactive which is driven by test scenarios, and auto-resizes: dynamic resizing (using ResizeObserver ?)
+  * $ show last result in scenario builder
+  * $ stack component
   * $ errors go to Footer
+  * $ SVG tooltips, resizes
+  * $ save the golden layout state for refresh
   * }}}
   * @param parent
   *   the parent element
@@ -32,7 +34,7 @@ case class Drawer(parent: HTMLElement) {
     * @return
     *   nowt - this updates the components in-place
     */
-  def refresh(inactiveTabs: Set[Components] = Components.values.toSet) = {
+  def refresh(inactiveTabs: Set[UIComponent] = UIComponent.values.toSet) = {
     parent.innerHTML = ""
 
     def add(title: String, function: String) = {
@@ -50,13 +52,13 @@ case class Drawer(parent: HTMLElement) {
       myLayout.createDragSource(item, config)
     }
 
-    Components.values.filter(inactiveTabs.contains).foreach { c =>
+    UIComponent.values.filter(inactiveTabs.contains).foreach { c =>
       add(c.name, c.function)
     }
   }
 
   EventBus.activeTabs.subscribe { tabs =>
-    val inactive = Components.values.toSet -- tabs
+    val inactive = UIComponent.values.toSet -- tabs
     refresh(inactive)
   }
 }
