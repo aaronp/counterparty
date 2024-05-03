@@ -5,7 +5,6 @@ import contract.*
 enum RestaurantLogic[A]:
   case GetStrategy                                  extends RestaurantLogic[Strategy]
   case CheckInventory(ingredients: Seq[Ingredient]) extends RestaurantLogic[Inventory]
-  case PlaceOrder(order: Seq[Dish]) extends RestaurantLogic[OrderId | OrderRejection]
   // making a dish should also update the inventory
   case MakeDish(dish: Dish)                            extends RestaurantLogic[PreparedOrder]
   case UpdateInventory(newInventory: Inventory)        extends RestaurantLogic[Unit]

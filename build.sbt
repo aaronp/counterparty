@@ -28,7 +28,7 @@ ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
   "-rewrite",//-rewrite -source 3.4-migration
   "-Xlint",
-  "-Xsource:3.4"
+  "-Xsource:3"
 )
 
 lazy val generated = project.in(file("generated"))
