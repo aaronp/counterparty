@@ -1,4 +1,4 @@
-//> using scala "3.4.0"
+//> using scala "3.4.1"
 //> using lib "com.github.aaronp::counterparty:0.0.1-SNAPSHOT"
 //> using repositories https://maven.pkg.github.com/aaronp/counterparty
 
@@ -24,7 +24,8 @@ class Service(
     signLogic: SignContractHandler = contract.handler.SignContractHandler.InMemory()
 ) extends DefaultService {
   override def createContract(request: DraftContract) = {
-    draftLogic.run(request).execOrThrow()
+    // draftLogic.run(request).execOrThrow()
+    ???
   }
   override def signDraftContract(request: SignDraftContractRequest) =
     signLogic.run(request).execOrThrow()

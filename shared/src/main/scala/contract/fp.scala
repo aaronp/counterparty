@@ -117,7 +117,8 @@ enum Program[F[_], A]:
   }
 
 object Program:
-  def of[F[_], A](a: A): Program[F, A] = Program.Pure(a)
+  def pure[F[_], A](a: A): Program[F, A] = Program.Pure(a)
+  def of[F[_], A](a: A): Program[F, A]   = pure[F, A](a)
 
   // like 'pure' but for 'F[_]' types
   def apply[F[_], A](fa: F[A]): Program[F, A] = Program.Suspend(fa)
