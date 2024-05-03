@@ -28,8 +28,17 @@ ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
   "-rewrite",//-rewrite -source 3.4-migration
   "-Xlint",
-  "-Xsource:3.4"
+  "-Xsource:3"
 )
+
+lazy val generated = project.in(file("generated"))
+  .settings(
+    openApiInputSpec := "service.yaml",
+    openApiConfigFile := "openapi-config.yaml",
+    openApiGeneratorName := "scala-cask",
+    openApiOutputDir := "target/model-generated",
+  )
+
 
 lazy val app = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   enablePlugins(BuildInfoPlugin).

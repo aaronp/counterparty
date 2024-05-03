@@ -13,7 +13,9 @@ import contract.js.LocalState
 import contract.js.TestScenario
 import org.scalajs.dom.HTMLParagraphElement
 import scala.util.chaining.*
-
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.*
 case class ScenarioBuilder() {
 
   private def onDelete() = {
@@ -182,9 +184,8 @@ case class ScenarioBuilder() {
     refreshSelect()
   }
 
-  // EventBus.activeTestScenario.subscribe(scenario => {
-  //   println(s"Got new scenario: $scenario")
-  //   updateContent(scenario)
-  //   refreshSelect()
-  // })
+  // send an initial event after load
+  Future {
+    currentScenario().foreach(EventBus.activeTestScenario.publish)
+  }
 }
