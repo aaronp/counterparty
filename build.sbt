@@ -31,6 +31,15 @@ ThisBuild / scalacOptions ++= Seq(
   "-Xsource:3.4"
 )
 
+lazy val generated = project.in(file("generated"))
+  .settings(
+    openApiInputSpec := "service.yaml",
+    openApiConfigFile := "openapi-config.yaml",
+    openApiGeneratorName := "scala-cask",
+    openApiOutputDir := "target/model-generated",
+  )
+
+
 lazy val app = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   enablePlugins(BuildInfoPlugin).
   settings(commonSettings).
