@@ -1,6 +1,6 @@
 package contract.trade.restaurant
 
-import contract.trade.AppRuntime
+import contract.trade.*
 import zio.*
 import contract.*
 
@@ -8,27 +8,37 @@ trait Restaurant {
   def placeOrder(order: Order): Task[OrderId | OrderRejection]
 }
 
-trait App[F[_]] {
-
-  def onInput[A]: F[A] => Task[A]
-
-  private given ~>[F, Task] with {
-    override def apply[A](fa: F[A]): Task[A] = onInput(fa)
-  }
-
-  def run[A](fa: Program[F, A]): Task[A] = fa.foldMap[Task]
-}
-
 object Restaurant {
 
-  def apply(handle: [A] => RestaurantLogic[A] => Task[A]): Restaurant = new Restaurant
-    with App[RestaurantLogic] {
+  def apply(): Restaurant = new Restaurant with ProgramApp[RestaurantLogic] {
 
-    override def onInput[A] = handle[A]
+    override def onInput[A](op: RestaurantLogic[A]) = op match {
+      case RestaurantLogic.CheckInventory(ingredients) =>
+        val name      = sourcecode.Name()
+        val fullName  = sourcecode.FullName()
+        val enclosing = sourcecode.Enclosing()
 
-    def placeOrder(order: Order): Task[OrderId | OrderRejection] = run(
+        ZIO.succeed(Inventory(ingredients))
+
+      case RestaurantLogic.MakeDish(dish) =>
+        ZIO.succeed(PreparedOrder(dish, OrderId("1")))
+
+      case RestaurantLogic.UpdateInventory(newInventory) =>
+        ZIO.succeed(())
+      case RestaurantLogic.ReplaceStock(ingredients) =>
+        ZIO.succeed(OrderId("1"))
+      case RestaurantLogic.Log(message) =>
+        ZIO.succeed(())
+      case RestaurantLogic.NoOp =>
+        ZIO.succeed(())
+      case RestaurantLogic.GetStrategy =>
+        ZIO.succeed(Strategy(3, 7))
+
+    }
+
+    def placeOrder(order: Order): Task[OrderId | OrderRejection] = run {
       RestaurantLogic.placeOrder(order)
-    )
+    }
   }
 
   def main(args: Array[String]) = println("hi")

@@ -83,7 +83,7 @@ package object restaurant {
   object Inventory:
     def empty                                         = Map.empty[Ingredient, Int]
     def apply(value: Map[Ingredient, Int]): Inventory = value
-    def apply(fromIngredients: List[Ingredient]): Inventory =
+    def apply(fromIngredients: Seq[Ingredient]): Inventory =
       val map: Map[Ingredient, Int] = fromIngredients.groupBy(identity).view.mapValues(_.size).toMap
       map
   extension (inventory: Inventory)
