@@ -10,19 +10,13 @@ trait Restaurant {
 
 object Restaurant {
 
-  def apply(): Restaurant = new Restaurant with ProgramApp[RestaurantLogic] {
+  def apply(): Restaurant = new Restaurant with RunnableProgram[RestaurantLogic] {
 
     override def onInput[A](op: RestaurantLogic[A]) = op match {
       case RestaurantLogic.CheckInventory(ingredients) =>
-        val name      = sourcecode.Name()
-        val fullName  = sourcecode.FullName()
-        val enclosing = sourcecode.Enclosing()
-
         ZIO.succeed(Inventory(ingredients))
-
       case RestaurantLogic.MakeDish(dish) =>
         ZIO.succeed(PreparedOrder(dish, OrderId("1")))
-
       case RestaurantLogic.UpdateInventory(newInventory) =>
         ZIO.succeed(())
       case RestaurantLogic.ReplaceStock(ingredients) =>
@@ -36,9 +30,10 @@ object Restaurant {
 
     }
 
-    def placeOrder(order: Order): Task[OrderId | OrderRejection] = run {
+    override def placeOrder(order: Order): Task[OrderId | OrderRejection] = run(
       RestaurantLogic.placeOrder(order)
-    }
+    )
+
   }
 
   def main(args: Array[String]) = println("hi")
