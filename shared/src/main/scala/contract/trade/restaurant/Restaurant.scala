@@ -10,18 +10,18 @@ trait Restaurant {
 
 object Restaurant {
 
-  def apply(telemetry: Telemetry = Telemetry()): Restaurant = new Restaurant
+  def apply(telemetry: Telemetry = Telemetry()) = new Restaurant
     with RunnableProgram[RestaurantLogic](telemetry) {
 
     override def onInput[A](op: RestaurantLogic[A]) = op match {
       case RestaurantLogic.CheckInventory(ingredients) =>
-        ZIO.succeed(Inventory(ingredients))
+        Coords("inventory", "InventoryService") -> ZIO.succeed(Inventory(ingredients))
       case RestaurantLogic.MakeDish(dish) =>
         ZIO.succeed(PreparedOrder(dish, OrderId("1")))
       case RestaurantLogic.UpdateInventory(newInventory) =>
-        ZIO.succeed(())
+        Coords("inventory", "InventoryService") -> ZIO.succeed(())
       case RestaurantLogic.ReplaceStock(ingredients) =>
-        ZIO.succeed(OrderId("1"))
+        Coords("supplier", "Marketplace") -> ZIO.succeed(OrderId("1"))
       case RestaurantLogic.Log(message) =>
         ZIO.succeed(())
       case RestaurantLogic.NoOp =>

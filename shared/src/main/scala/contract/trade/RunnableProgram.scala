@@ -3,14 +3,13 @@ package contract.trade
 import zio.*
 import contract.*
 import scala.reflect.ClassTag
-import java.util.concurrent.TimeUnit
 
 /** This trait is a kind of convenience wrapper around our 'Program' ADT, providing the common (but
   * perhaps unfamiliar or confusing) 'foldMap' machinery we need to execute our program.
   */
-trait RunnableProgram[F[_]](telemetry: Telemetry) {
+trait RunnableProgram[F[_]](val telemetry: Telemetry) {
 
-  type Invoke[A] = (Coords, () => Task[A])
+  type Invoke[A] = (Coords, Task[A])
 
   /** How do we want to handle the execution of our program? We'll use ZIO Tasks for this.
     *
@@ -28,15 +27,14 @@ trait RunnableProgram[F[_]](telemetry: Telemetry) {
       "enclosing" -> sourcecode.Enclosing()
     )
 
-    def run: Task[A] = onInput(operation) match {
-      case task: Task[A]       => task
-      case (call: Coords, job) => job()
+    val (coords, run) = onInput(operation) match {
+      case task: Task[A]     => (Coords(this), task)
+      case invoke: Invoke[A] => invoke._1 -> invoke._2
     }
 
     for {
-      call   <- telemetry.onCall(Coords(this))
-      result <- run
-
+      call   <- telemetry.onCall(coords)
+      result <- call.completeWith(run)
     } yield result
   }
 

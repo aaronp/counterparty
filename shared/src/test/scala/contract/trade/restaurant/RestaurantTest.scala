@@ -15,6 +15,9 @@ class RestaurantTest extends AnyWordSpec with Matchers {
       val order  = Order(List(Dish(List(Ingredient("1")))))
       val result = restaurant.placeOrder(order).execOrThrow()
 
+      val calls = restaurant.telemetry.calls.execOrThrow()
+      calls.foreach(println)
+
       result shouldBe Right(OrderId("1"))
     }
   }

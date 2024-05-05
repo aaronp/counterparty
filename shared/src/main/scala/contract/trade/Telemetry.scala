@@ -1,21 +1,28 @@
 package contract.trade
 
-import zio.*
-
-import scala.reflect.ClassTag
-import zio.*
 import contract.*
+import zio.*
 
-import scala.util.Try
-import java.io.IOException
 import java.util.concurrent.TimeUnit
+import scala.reflect.ClassTag
 
-trait Telemetry(calls: Ref[CallStack]) {
+trait Telemetry(val callsStackRef: Ref[CallStack]) {
+
+  def calls: UIO[Seq[CompletedCall]] = {
+    for {
+      callStack <- callsStackRef.get
+      calls <- ZIO.foreach(callStack.calls) { call =>
+        call.response.get.map { resp =>
+          CompletedCall(call.invocation, resp)
+        }
+      }
+    } yield calls
+  }
 
   def onCall(source: Coords): ZIO[Any, Nothing, Call] = {
     for {
       call <- Call(source)
-      _    <- calls.update(_.add(call))
+      _    <- callsStackRef.update(_.add(call))
     } yield call
   }
 }
@@ -58,6 +65,16 @@ enum CallResponse:
   case Error(timestamp: Long, bang: Any)
   case Completed(timestamp: Long, result: Any)
 
+final case class CallSite(
+    source: Coords,
+    //    target: Coords,
+    //    operations: String,
+    //    input: Any,
+    timestamp: Long
+)
+
+final case class CompletedCall(invocation: CallSite, response: CallResponse)
+
 /** Represents a Call invocation -- something we'd want to capture in our archtiecture (i.e. a
   * sequence diagram describing our system)
   *
@@ -70,11 +87,7 @@ enum CallResponse:
   *   the time the call was made
   */
 final case class Call(
-    source: Coords,
-//    target: Coords,
-//    operations: String,
-//    input: Any,
-    timestamp: Long,
+    invocation: CallSite,
     response: Ref[CallResponse]
 ) {
   def completeWith[A](result: Task[A]): Task[A] = {
@@ -100,6 +113,6 @@ object Call {
       _           <- Console.printLine(s"creating call for $source").orDie
       now         <- Clock.currentTime(TimeUnit.MILLISECONDS)
       responseRef <- Ref.make[CallResponse](CallResponse.NotCompleted)
-    } yield new Call(source, now, responseRef)
+    } yield new Call(CallSite(source, now), responseRef)
   }
 }
