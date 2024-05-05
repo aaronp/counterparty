@@ -13,6 +13,8 @@ object Restaurant {
   def apply(telemetry: Telemetry = Telemetry()) = new Restaurant
     with RunnableProgram[RestaurantLogic](telemetry) {
 
+    override def appCoords = Coords(this)
+
     override def onInput[A](op: RestaurantLogic[A]) = op match {
       case RestaurantLogic.CheckInventory(ingredients) =>
         Coords("inventory", "InventoryService") -> ZIO.succeed(Inventory(ingredients))

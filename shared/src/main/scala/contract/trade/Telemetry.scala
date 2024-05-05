@@ -19,9 +19,9 @@ trait Telemetry(val callsStackRef: Ref[CallStack]) {
     } yield calls
   }
 
-  def onCall(source: Coords): ZIO[Any, Nothing, Call] = {
+  def onCall[F[_], A](source: Coords, target : Coords, operation : F[A]): ZIO[Any, Nothing, Call] = {
     for {
-      call <- Call(source)
+      call <- Call(source, target, operation)
       _    <- callsStackRef.update(_.add(call))
     } yield call
   }
@@ -45,18 +45,20 @@ case class CallStack(calls: Seq[Call] = Vector()) {
   * @param app
   *   the name of the system - what or who is invoking the call
   */
-final case class Coords(namespace: String, app: String)
+final case class Coords(namespace: String, app: String) {
+  override def toString = s"$namespace.$app"
+}
 object Coords {
   def default(app: String): Coords = Coords("default", app)
-  def apply[A: ClassTag](svc: A): Coords = {
-    val name = summon[ClassTag[A]].runtimeClass.getSimpleName
-    val pck  = summon[ClassTag[A]].runtimeClass.getName
-    new Coords(pck, name)
-  }
+  def apply[A: ClassTag](svc: A): Coords = apply[A]
+
   def apply[A: ClassTag]: Coords = {
-    val name = summon[ClassTag[A]].runtimeClass.getSimpleName
-    val pck  = summon[ClassTag[A]].runtimeClass.getName
-    new Coords(pck, name)
+    val fullyQualifiedName = summon[ClassTag[A]].runtimeClass.getName
+    val parts = fullyQualifiedName.split("\\.", -1).toSeq
+    val packageName = parts.init.last
+    val name = parts.last.takeWhile(_ != '$')
+
+    new Coords(packageName, name)
   }
 }
 
@@ -67,13 +69,30 @@ enum CallResponse:
 
 final case class CallSite(
     source: Coords,
-    //    target: Coords,
-    //    operations: String,
-    //    input: Any,
+    target: Coords,
+    operation: Any,
     timestamp: Long
 )
 
-final case class CompletedCall(invocation: CallSite, response: CallResponse)
+final case class CompletedCall(invocation: CallSite, response: CallResponse) {
+  export invocation.*
+  def atDateTime = java.time.Instant.ofEpochMilli(timestamp)
+
+  def duration = response match {
+    case CallResponse.Error(end, _) => (end - timestamp).millis
+    case CallResponse.Completed(end, _) => (end - timestamp).millis
+    case CallResponse.NotCompleted => Duration.Infinity
+  }
+
+  def resultText = response match {
+    case CallResponse.Error(_, err) => s"failed with $err"
+    case CallResponse.Completed(_, result) => s"returned $result"
+    case CallResponse.NotCompleted => "never completed"
+  }
+  override def toString = {
+    s"$source --[ $operation ]--> $target $resultText and took $duration at $atDateTime"
+  }
+}
 
 /** Represents a Call invocation -- something we'd want to capture in our archtiecture (i.e. a
   * sequence diagram describing our system)
@@ -108,11 +127,10 @@ final case class Call(
 }
 
 object Call {
-  def apply(source: Coords): ZIO[Any, Nothing, Call] = {
+  def apply(source: Coords, target: Coords, operation : Any): ZIO[Any, Nothing, Call] = {
     for {
-      _           <- Console.printLine(s"creating call for $source").orDie
       now         <- Clock.currentTime(TimeUnit.MILLISECONDS)
       responseRef <- Ref.make[CallResponse](CallResponse.NotCompleted)
-    } yield new Call(CallSite(source, now), responseRef)
+    } yield new Call(CallSite(source, target, operation, now), responseRef)
   }
 }
