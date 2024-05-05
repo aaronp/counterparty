@@ -8,11 +8,9 @@ import java.util.concurrent.TimeUnit
 /** This trait is a kind of convenience wrapper around our 'Program' ADT, providing the common (but
   * perhaps unfamiliar or confusing) 'foldMap' machinery we need to execute our program.
   */
-trait RunnableProgram[F[_]] {
+trait RunnableProgram[F[_]](telemetry: Telemetry) {
 
   type Invoke[A] = (Coords, () => Task[A])
-
-  val calls = Ref.unsafe.make(CallStack())
 
   /** How do we want to handle the execution of our program? We'll use ZIO Tasks for this.
     *
@@ -30,16 +28,15 @@ trait RunnableProgram[F[_]] {
       "enclosing" -> sourcecode.Enclosing()
     )
 
-    def run = onInput(operation) match {
+    def run: Task[A] = onInput(operation) match {
       case task: Task[A]       => task
-      case (call: Coords, job) =>
-
+      case (call: Coords, job) => job()
     }
 
     for {
-      now    <- Clock.currentTime(TimeUnit.MILLISECONDS)
-      _      <- Console.printLine(s"on $operation")
+      call   <- telemetry.onCall(Coords(this))
       result <- run
+
     } yield result
   }
 

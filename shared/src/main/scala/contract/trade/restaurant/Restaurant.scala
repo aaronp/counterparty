@@ -10,7 +10,8 @@ trait Restaurant {
 
 object Restaurant {
 
-  def apply(): Restaurant = new Restaurant with RunnableProgram[RestaurantLogic] {
+  def apply(telemetry: Telemetry = Telemetry()): Restaurant = new Restaurant
+    with RunnableProgram[RestaurantLogic](telemetry) {
 
     override def onInput[A](op: RestaurantLogic[A]) = op match {
       case RestaurantLogic.CheckInventory(ingredients) =>
