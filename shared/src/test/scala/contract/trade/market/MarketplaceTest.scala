@@ -42,46 +42,48 @@ class MarketplaceTest extends AnyWordSpec with Matchers {
     [A] => {
       (_: MarketplaceLogic[A]) match {
         case GetConfig =>
-          Result.TraceTask(
-            Coords("marketplace", "Config"),
-            ZIO.succeed(Settings(2.seconds, Address("1", "2", "3")))
-          )
+          ZIO
+            .succeed(Settings(2.seconds, Address("1", "2", "3")))
+            .asTracedResult(Coords("marketplace", "Config"))
         case SaveOrder(order) =>
-          Result.TraceTask(
-            Coords("marketplace", "DB"),
-            ZIO.succeed(order.hashCode().toString.asOrderId)
-          )
+          val job: Task[OrderId] = ZIO.succeed(order.hashCode().toString.asOrderId)
+          job.asTracedResult(Coords("marketplace", "DB"))
         case SaveDistributors(orderId, sentTo) =>
-          Result.TraceTask(Coords("marketplace", "DB"), ZIO.succeed(()))
+          ZIO.succeed(()).asTracedResult(Coords("marketplace", "DB"))
         case input @ SendOutRequestsForQuote(order) =>
-          ZIO.foreachPar(Seq(vowelsAreAFiver, everythingIs100)) {
-            case distributor @ `vowelsAreAFiver` =>
-              val job = ZIO.succeed(RFQResponse(distributor, quoteVowels(order)))
-              Coords[Marketplace].trace(job, Coords("distributor", "VowelsAre£5"), input)
-            case distributor @ `everythingIs100` =>
-              val job = ZIO.succeed(RFQResponse(distributor, everythings100(order)))
-              Coords[Marketplace].trace(job, Coords("distributor", "Everything's £100"), input)
-          }
-        case input @ SendOrders(orders) =>
-          //   val result: Seq[(Distributor, DistributorRef)] = orders.map {
-          //     case DistributorOrder(distributor, orderPortion, orderId) =>
-          //       val ref: DistributorRef = s"$orderId-${orderPortion.hashCode()}".asDistributorOrderRef
-          //       (distributor -> ref)
-          //   }
-          //   // TODO - parallelize this and trace
-          //   ZIO.succeed(result.toMap)
+          // here we explicitly trace the calls we make, as they are internal to the ultimate 'Task' we return
+          // that is to say, there is a granularity here we don't want to lose
+          ZIO
+            .foreachPar(Seq(vowelsAreAFiver, everythingIs100)) {
+              case distributor @ `vowelsAreAFiver` =>
+                val job = ZIO.succeed(RFQResponse(distributor, quoteVowels(order)))
 
+                // our explicit tracing of this job
+                Coords[Marketplace].trace(job, Coords("distributor", "VowelsAre£5"), input)
+              case distributor @ `everythingIs100` =>
+                val job = ZIO.succeed(RFQResponse(distributor, everythings100(order)))
+
+                // our explicit tracing of this job
+                Coords[Marketplace].trace(job, Coords("distributor", "Everything's £100"), input)
+            }
+            .asResult // we don't want to trace the market -> market wrapper job, so just return a normal result
+        case input @ SendOrders(orders) =>
           val listResult = ZIO.foreachPar(orders) {
             case DistributorOrder(distributor, orderPortion, orderId) =>
               val ref: DistributorRef = s"$orderId-${orderPortion.hashCode()}".asDistributorOrderRef
               val tuple               = (distributor -> ref)
-              Coords[Marketplace].trace(
-                ZIO.succeed(tuple),
-                Coords("distributor", distributor.distributorName),
-                input
-              )
+
+              // again, here we explicitly trace the calls we make, as they are internal to the ultimate 'Task' we return
+              // that is to say, there is a granularity here we don't want to lose
+              Coords[Marketplace]
+                .trace(
+                  ZIO.succeed(orderPortion), // <-- we want to track this in our telemetry ...
+                  Coords("distributor", distributor.distributorName),
+                  input
+                )
+                .as(tuple) // <-- but ultimately return this from our function
           }
-          listResult.map(_.toMap)
+          listResult.map(_.toMap).asResult
       }
     }
 

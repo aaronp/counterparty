@@ -38,6 +38,8 @@ object Telemetry {
   }
 }
 
+def now = Clock.currentTime(TimeUnit.NANOSECONDS)
+
 case class CallStack(calls: Seq[Call] = Vector()) {
   def add(call: Call) = copy(calls :+ call)
 }
@@ -75,25 +77,55 @@ final case class CallSite(
     operation: Any,
     timestamp: Long
 )
+object ConsoleColors {
+  // ANSI escape codes for colors
+  private val RESET  = "\u001B[0m"
+  private val RED    = "\u001B[31m"
+  private val GREEN  = "\u001B[32m"
+  private val YELLOW = "\u001B[33m"
+  private val BLUE   = "\u001B[34m"
+  private val PURPLE = "\u001B[35m"
+  private val CYAN   = "\u001B[36m"
+  private val WHITE  = "\u001B[37m"
 
+  // Colored output methods
+  def red(text: String): String    = s"$RED$text$RESET"
+  def green(text: String): String  = s"$GREEN$text$RESET"
+  def yellow(text: String): String = s"$YELLOW$text$RESET"
+  def blue(text: String): String   = s"$BLUE$text$RESET"
+  def purple(text: String): String = s"$PURPLE$text$RESET"
+  def cyan(text: String): String   = s"$CYAN$text$RESET"
+  def white(text: String): String  = s"$WHITE$text$RESET"
+}
 final case class CompletedCall(invocation: CallSite, response: CallResponse) {
+  import ConsoleColors.*
   export invocation.*
   def atDateTime = java.time.Instant.ofEpochMilli(timestamp)
 
+  private def fmtDuration(end: Long, start: Long) = {
+    val millis = (end.toDouble - start.toDouble) / 1000000
+    f"$millis%.4fms"
+  }
   def duration = response match {
-    case CallResponse.Error(end, _)     => (end - timestamp).millis
-    case CallResponse.Completed(end, _) => (end - timestamp).millis
-    case CallResponse.NotCompleted      => Duration.Infinity
+    case CallResponse.Error(end, _)     => fmtDuration(end, timestamp)
+    case CallResponse.Completed(end, _) => fmtDuration(end, timestamp)
+    case CallResponse.NotCompleted      => "♾️"
   }
 
   def resultText = response match {
-    case CallResponse.Error(_, err)        => s"failed with $err"
-    case CallResponse.Completed(_, result) => s"returned $result"
-    case CallResponse.NotCompleted         => "never completed"
+    case CallResponse.Error(_, err)        => ConsoleColors.red(s"failed with $err")
+    case CallResponse.Completed(_, result) => ConsoleColors.green(s"returned $result")
+    case CallResponse.NotCompleted         => ConsoleColors.yellow("never completed")
   }
-  override def toString = {
+  override def toString = toStringColor
+
+  def toStringMonocolor =
     s"$source --[ $operation ]--> $target $resultText and took $duration at $atDateTime"
-  }
+
+  def operationArrow = s"--[ $operation ]-->"
+
+  def toStringColor =
+    s"${blue(source.toString)} ${purple(operationArrow)} ${yellow(target.toString)} $resultText and took $duration at $atDateTime"
 }
 
 /** Represents a Call invocation -- something we'd want to capture in our archtiecture (i.e. a
@@ -127,15 +159,15 @@ final class Call(
   def completeWith[A](result: Task[A]): Task[A] = {
     for {
       either <- result.either
-      now    <- Clock.currentTime(TimeUnit.MILLISECONDS)
+      time   <- now
       result <- either match {
         case Left(err) =>
           for {
-            _      <- response.set(CallResponse.Error(now, err))
+            _      <- response.set(CallResponse.Error(time, err))
             failed <- ZIO.fail(err)
           } yield failed
         case Right(ok) =>
-          response.set(CallResponse.Completed(now, ok)).as(ok)
+          response.set(CallResponse.Completed(time, ok)).as(ok)
       }
     } yield result
   }
@@ -144,8 +176,8 @@ final class Call(
 object Call {
   def apply(source: Coords, target: Coords, operation: Any): ZIO[Any, Nothing, Call] = {
     for {
-      now         <- Clock.currentTime(TimeUnit.MILLISECONDS)
+      time        <- now
       responseRef <- Ref.make[CallResponse](CallResponse.NotCompleted)
-    } yield new Call(CallSite(source, target, operation, now), responseRef)
+    } yield new Call(CallSite(source, target, operation, time), responseRef)
   }
 }

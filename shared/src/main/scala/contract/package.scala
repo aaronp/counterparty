@@ -2,7 +2,6 @@ import contract.model.*
 
 import java.util.UUID
 import zio.{Runtime, Task, Unsafe}
-import scala.language.implicitConversions
 
 /** In this example, we're representing the flow of a microservice responsible for contracts.
   *
@@ -50,38 +49,6 @@ import scala.language.implicitConversions
   * }}}
   */
 package object contract {
-
-  enum Result[A]:
-    case RunTask(task: Task[A])                   extends Result[A]
-    case TraceTask(coords: Coords, task: Task[A]) extends Result[A]
-
-  given taskToResult[A]: Conversion[Task[A], Result[A]] with {
-    def apply(task: Task[A]): Result[A] = Result.RunTask(task)
-  }
-
-  /** A common convenience method for ZIO stuff... might as well stick it here
-    */
-  extension [A](job: Task[A])
-    def execOrThrow(): A = Unsafe.unsafe { implicit unsafe =>
-      Runtime.default.unsafe.run(job).getOrThrowFiberFailure()
-    }
-
-  extension (source: Coords)(using telemetry: Telemetry)
-    /** Trace this call to the given 'target' service / database / whatever
-      *
-      * @param target
-      *   the business name (Coords) of the target we're calling
-      * @param input
-      *   the input used in this request
-      * @return
-      *   a 'pimped' task which will update the telemetry when run
-      */
-    def trace[A](job: Task[A], target: Coords, input: Any): Task[A] = {
-      for {
-        call   <- telemetry.onCall(source, target, input)
-        result <- call.completeWith(job)
-      } yield result
-    }
 
   // for readability (and type-checking, and flexibility), we'll create some type-aliases.
   // this will help the compiler enforce correctness rather than us having to write additional tests

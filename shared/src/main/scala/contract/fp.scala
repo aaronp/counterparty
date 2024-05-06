@@ -124,3 +124,35 @@ object Program:
   def apply[F[_], A](fa: F[A]): Program[F, A] = Program.Suspend(fa)
 
 extension [F[_], A](fa: F[A]) def asProgram: Program[F, A] = Program(fa)
+
+// ---- for telemetry ----
+
+enum Result[A]:
+  case RunTask(task: Task[A])                   extends Result[A]
+  case TraceTask(coords: Coords, task: Task[A]) extends Result[A]
+
+/** A common convenience method for ZIO stuff... might as well stick it here
+  */
+extension [A](job: Task[A])
+  def execOrThrow(): A = Unsafe.unsafe { implicit unsafe =>
+    Runtime.default.unsafe.run(job).getOrThrowFiberFailure()
+  }
+  def asResult: Result[A]                             = Result.RunTask(job)
+  def asTracedResult(targetSystem: Coords): Result[A] = Result.TraceTask(targetSystem, job)
+
+extension (source: Coords)(using telemetry: Telemetry)
+  /** Trace this call to the given 'target' service / database / whatever
+    *
+    * @param target
+    *   the business name (Coords) of the target we're calling
+    * @param input
+    *   the input used in this request
+    * @return
+    *   a 'pimped' task which will update the telemetry when run
+    */
+  def trace[A](job: Task[A], target: Coords, input: Any): Task[A] = {
+    for {
+      call   <- telemetry.onCall(source, target, input)
+      result <- call.completeWith(job)
+    } yield result
+  }

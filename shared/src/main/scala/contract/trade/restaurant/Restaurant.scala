@@ -4,8 +4,6 @@ import contract.trade.*
 import zio.*
 import contract.*
 import contract.RunnableProgram
-import contract.{given, *}
-import scala.language.implicitConversions
 
 trait Restaurant {
   def placeOrder(order: Order): Task[OrderId | OrderRejection]
@@ -37,17 +35,16 @@ object Restaurant {
         )
       // Coords("inventory", "InventoryService") -> ZIO.succeed(Inventory(ingredients))
       case RestaurantLogic.MakeDish(dish) =>
-        ZIO.succeed(PreparedOrder(dish, OrderId("1")))
+        ZIO.succeed(PreparedOrder(dish, OrderId("1"))).asResult
       case RestaurantLogic.UpdateInventory(newInventory) =>
         Result.TraceTask(Coords("inventory", "InventoryService"), ZIO.succeed(()))
       case RestaurantLogic.ReplaceStock(ingredients) =>
         Result.TraceTask(Coords("supplier", "Marketplace"), ZIO.succeed(OrderId("1")))
       case RestaurantLogic.Log(message) =>
-        ZIO.succeed(())
+        ZIO.succeed(()).asResult
       case RestaurantLogic.NoOp =>
-        ZIO.succeed(())
-      case RestaurantLogic.GetStrategy =>
-        ZIO.succeed(Strategy(3, 7))
+        ZIO.succeed(()).asResult
+      case RestaurantLogic.GetStrategy => ZIO.succeed(Strategy(3, 7)).asResult
     }
 
     override def placeOrder(order: Order): Task[OrderId | OrderRejection] = run(
