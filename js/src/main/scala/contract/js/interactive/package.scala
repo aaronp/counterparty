@@ -10,41 +10,14 @@ package object interactive {
 
   type Json = Value
 
-  enum ActorType:
-    case Person, Database, Queue, Email, Service, Job
+  export _root_.support.Actor
+  export _root_.support.ActorType
 
-    def icon = this match
-      case Person   => "👤"
-      case Database => "🗄️"
-      case Queue    => "📤"
-      case Email    => "📧"
-      case Service  => "🖥️"
-      case Job      => "🤖"
-
-  /** This is to represent the actors in a system. The people and things which send messsages and
-    * data to each other
-    *
-    * @param type
-    *   what kind of thing is this?
-    * @param category
-    *   what group does this belong to? (e.g. a suite of services)
-    * @param label
-    *   what should we call this thing?
+  /** Representation of a message being sent from one actor to another
     */
-  case class Actor(`type`: ActorType, category: String, label: String)
-  object Actor:
-    def person(category: String, label: String)   = Actor(ActorType.Person, category, label)
-    def database(category: String, label: String) = Actor(ActorType.Database, category, label)
-    def queue(category: String, label: String)    = Actor(ActorType.Queue, category, label)
-    def job(category: String, label: String)      = Actor(ActorType.Job, category, label)
-    def email(category: String, label: String)    = Actor(ActorType.Email, category, label)
-    def service(category: String, label: String)  = Actor(ActorType.Service, category, label)
-
-    /** Representation of a message being sent from one actor to another
-      */
   case class SendMessage(
-      from: Actor,
-      to: Actor,
+      from: support.Actor,
+      to: support.Actor,
       timestamp: Long,
       duration: Duration,
       message: Json
@@ -54,8 +27,8 @@ package object interactive {
   }
   object SendMessage:
     def test = SendMessage(
-      Actor.person("foo", "dave"),
-      Actor.person("bar", "carl"),
+      support.Actor.person("foo", "dave"),
+      support.Actor.person("bar", "carl"),
       1234,
       10.seconds,
       ujson.Obj("hello" -> "world")
@@ -74,7 +47,7 @@ package object interactive {
       */
     case class EventLog private (
         messages: Vector[SendMessage],
-        actors: Set[Actor],
+        actors: Set[support.Actor],
         earliestTimestamp: Long,
         latestTimestamp: Long
     ):

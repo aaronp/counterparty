@@ -26,11 +26,10 @@ object CreateDraftLogic:
   def apply(draft: DraftContract): Program[CreateDraftLogic, Either[String, CreateDraftResponse]] =
     validateDraft(draft) match {
       case Some(err) =>
-        for {
-          log <- LogMessage(s"Validation failed: $err").asProgram
-        } yield Left(err)
+        for log <- LogMessage(s"Validation failed: $err").asProgram
+        yield Left(err)
       case None =>
-        for {
+        for
           _  <- LogMessage(s"Saving draft $draft").asProgram
           id <- StoreDraftInDatabase(draft).asProgram
           contract = Contract(draft, id)
@@ -39,17 +38,17 @@ object CreateDraftLogic:
           refB <- NotifyCounterpartyB(contract).asProgram
           response = CreateDraftResponse(Option(refA.code), Option(refB.code))
           _ <- LogMessage(s"Returning $response").asProgram
-        } yield Right(response)
+        yield Right(response)
     }
 
   private def validateDraft(draft: DraftContract) = {
-    if (draft.conditions.trim.isEmpty()) {
+    if draft.conditions.trim.isEmpty() then {
       Some("Draft has no conditions")
-    } else if (draft.terms.trim.isEmpty()) {
+    } else if draft.terms.trim.isEmpty() then {
       Some("Draft has no terms")
-    } else if (draft.firstCounterparty.trim.isEmpty()) {
+    } else if draft.firstCounterparty.trim.isEmpty() then {
       Some("The first counterparty is empty")
-    } else if (draft.secondCounterparty.trim.isEmpty()) {
+    } else if draft.secondCounterparty.trim.isEmpty() then {
       Some("The second counterparty is empty")
     } else {
       None

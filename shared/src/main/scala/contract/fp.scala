@@ -128,31 +128,86 @@ extension [F[_], A](fa: F[A]) def asProgram: Program[F, A] = Program(fa)
 // ---- for telemetry ----
 
 enum Result[A]:
-  case RunTask(task: Task[A])                   extends Result[A]
-  case TraceTask(coords: Coords, task: Task[A]) extends Result[A]
+  case RunTask(job: Task[A])                                             extends Result[A]
+  case TraceTask(coords: Actor, job: Task[A], input: Option[Any] = None) extends Result[A]
+
+  def task: Task[A] = this match {
+    case RunTask(task)         => task
+    case TraceTask(_, task, _) => task
+  }
 
 /** A common convenience method for ZIO stuff... might as well stick it here
   */
-extension [A](job: Task[A])
+extension [A](job: Task[A]) {
+
   def execOrThrow(): A = Unsafe.unsafe { implicit unsafe =>
     Runtime.default.unsafe.run(job).getOrThrowFiberFailure()
   }
-  def asResult: Result[A]                             = Result.RunTask(job)
-  def asTracedResult(targetSystem: Coords): Result[A] = Result.TraceTask(targetSystem, job)
+  def asResult: Result[A] = Result.RunTask(job)
+}
 
-extension (source: Coords)(using telemetry: Telemetry)
-  /** Trace this call to the given 'target' service / database / whatever
+/** Trace this call to the given 'target' service / database / whatever
+  *
+  * @param target
+  *   the business name (Actor) of the target we're calling
+  * @param input
+  *   the input used in this request
+  * @return
+  *   a 'pimped' task which will update the telemetry when run
+  */
+private def traceTask[A](job: Task[A], source: Actor, target: Actor, input: Any)(using
+    telemetry: Telemetry
+): Task[A] = {
+  for
+    call   <- telemetry.onCall(source, target, input)
+    result <- call.completeWith(job)
+  yield result
+}
+
+extension [A](op: => A) {
+  def asTask: Task[A] = ZIO.attempt(op)
+
+  /** This method is intended to be used when tasks are run within a single operation, for example
+    * when we need to run things in parallel for a given input, so want to trace those resulting
+    * actions.
     *
+    * Everything else will be traced via the 'RunnableProgram' when we encounter an operation
+    *
+    * @param source
+    *   the source system for this call (needed as we can run these tasks outside of
+    *   RunnablePrograms)
     * @param target
-    *   the business name (Coords) of the target we're calling
+    *   the target system - who we're calling
     * @param input
-    *   the input used in this request
+    *   the input used to make this call
+    * @param telemetry
+    *   the telemetry used to track calls
     * @return
-    *   a 'pimped' task which will update the telemetry when run
+    *   a task which will update the telemetry when run
     */
-  def trace[A](job: Task[A], target: Coords, input: Any): Task[A] = {
-    for {
-      call   <- telemetry.onCall(source, target, input)
-      result <- call.completeWith(job)
-    } yield result
-  }
+  def asTaskTraced(source: Actor, target: Actor, input: Any)(using
+      telemetry: Telemetry
+  ): Task[A] = traceTask(
+    asTask,
+    source,
+    target,
+    input
+  )
+
+  /** @return
+    *   this operation as a task inside a 'Result' type. The call will NOT be traced
+    */
+  def asResult: Result[A] = Result.RunTask(asTask)
+
+  /** @param targetSystem
+    *   who are we calling? Another system? Database? Queue? Filesystem? ...
+    * @param input
+    *   the input involved in this call
+    * @return
+    *   this operation as a task inside a traced 'Result' type. The call to the target will be
+    *   traced when run inside a RunnableProgram
+    */
+  def asResultTraced(targetSystem: Actor, input: Any = null): Result[A] =
+    Result.TraceTask(targetSystem, asTask, Option(input))
+
+}

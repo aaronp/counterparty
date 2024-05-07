@@ -72,7 +72,7 @@ case class ScenarioBuilder() {
   private def currentScenario(): Option[TestScenario] = LocalState.scenariosByName.get(lastSelected)
 
   private def notifyOnSelectChanged() = {
-    if (lastSelected != selectInput.value) {
+    if lastSelected != selectInput.value then {
       println(s"changing lastSelected from $lastSelected to ${selectInput.value} ")
       lastSelected = selectInput.value
       currentScenario().foreach(EventBus.activeTestScenario.publish)

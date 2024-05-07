@@ -3,7 +3,9 @@ package contract.trade.market
 import zio.*
 import contract.*
 import contract.RunnableProgram
+
 import concurrent.duration.*
+import scala.reflect.ClassTag
 
 trait Marketplace:
   def placeOrder(order: Order): Task[OrderId | OutOfStockResponse]
@@ -11,22 +13,23 @@ trait Marketplace:
 object Marketplace {
   import MarketplaceLogic.*
 
-  class App(logic: [A] => MarketplaceLogic[A] => Result[A])(using telemetry: Telemetry)
-      extends Marketplace
-      with RunnableProgram[MarketplaceLogic] {
-    override def appCoords = Coords(this)
+  val Symbol = Actor.service[Marketplace]
 
-    override def onInput[T](op: MarketplaceLogic[T]) = logic(op)
+  class App(appLogic: [A] => MarketplaceLogic[A] => Result[A])(using telemetry: Telemetry)
+      extends RunnableProgram[MarketplaceLogic](appLogic)
+      with Marketplace {
 
-    // TODO - pull this up to RunnableProgram
-    def overrideWith(
-        pf: PartialFunction[MarketplaceLogic[_], Result[_]]
-    ) = {
-      val newLogic: [T] => MarketplaceLogic[T] => Result[T] = [T] =>
-        (_: MarketplaceLogic[T]) match {
-          case op if pf.isDefinedAt(op) =>
-            pf(op.asInstanceOf[MarketplaceLogic[T]]).asInstanceOf[Result[T]]
-          case op => logic(op)
+    override protected def appCoords = Symbol
+
+    // I tried to lift this up to RunnableProgram, but apparently doing this with the generic F[_] type
+    // was a bridget too far
+    def withOverride(overrideFn: PartialFunction[MarketplaceLogic[?], Result[?]]): App = {
+      val newLogic: [A] => MarketplaceLogic[A] => Result[A] = [A] => {
+        (_: MarketplaceLogic[A]) match {
+          case value if overrideFn.isDefinedAt(value) =>
+            overrideFn(value).asInstanceOf[Result[A]]
+          case value => logic(value).asInstanceOf[Result[A]]
+        }
       }
       new App(newLogic)
     }

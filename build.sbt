@@ -27,8 +27,9 @@ ThisBuild / scalacOptions ++= Seq(
   "-feature",
   "-unchecked",
   "-rewrite",//-rewrite -source 3.4-migration
-  "-Xlint",
-  "-Xsource:3"
+  "-new-syntax",
+//  "-explain",
+  "-source 3.4-migration"
 )
 
 lazy val generated = project.in(file("generated"))
@@ -45,7 +46,8 @@ lazy val app = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   settings(commonSettings).
   jvmSettings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "cask" % "0.9.2")
+      "com.lihaoyi" %% "cask" % "0.9.2",
+    "com.github.aaronp" %% "eie" % "2.0.1" % Test)
   ).
   jsSettings(
     scalaJSUseMainModuleInitializer := true,

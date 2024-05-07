@@ -29,21 +29,21 @@ object Example {
     }
 
     def takeTwo(quantity: Int, toppings: List[String]): Program[PizzaOperation, Pizza] = {
-      for {
+      for
         orderId <- Program(SaveOrder(quantity, toppings))
         pizza   <- Program(Bake(toppings))
         money   <- Program(Deliver(pizza))
         _       <- Program(RecordOrder(orderId, money))
-      } yield pizza
+      yield pizza
     }
 
     def takeThree(quantity: Int, toppings: List[String]): Program[PizzaOperation, Pizza] = {
-      for {
+      for
         orderId <- SaveOrder(quantity, toppings).asProgram
         pizza   <- Bake(toppings).asProgram
         money   <- Deliver(pizza).asProgram
         _       <- RecordOrder(orderId, money).asProgram
-      } yield pizza
+      yield pizza
     }
 
 }

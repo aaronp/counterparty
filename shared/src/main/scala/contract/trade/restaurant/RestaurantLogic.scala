@@ -8,6 +8,7 @@ enum RestaurantLogic[A]:
   // making a dish should also update the inventory
   case MakeDish(dish: Dish)                            extends RestaurantLogic[PreparedOrder]
   case UpdateInventory(newInventory: Inventory)        extends RestaurantLogic[Unit]
+  case SaveOrder(order: Order)                         extends RestaurantLogic[OrderId]
   case ReplaceStock(ingredients: Map[Ingredient, Int]) extends RestaurantLogic[OrderId]
   case Log(message: String)                            extends RestaurantLogic[Unit]
   case NoOp                                            extends RestaurantLogic[Unit]
@@ -34,31 +35,32 @@ object RestaurantLogic:
     */
     // format: on   
   def placeOrder(order: Order): Program[RestaurantLogic, OrderId | OrderRejection] = {
-    for {
+    for
       currentInventoryForIngredientsRequired <- checkInventory(order.orderIngredients)
       required = order.missingInventoryRequired(currentInventoryForIngredientsRequired).toMap
       result <-
         if required.isEmpty then makeTheOrder(order, currentInventoryForIngredientsRequired)
         else rejectOrder(order, currentInventoryForIngredientsRequired)
-    } yield result
+    yield result
   }
 
   private def makeTheOrder(
       order: Order,
       currentInventory: Inventory
   ): Program[RestaurantLogic, OrderId] = {
-    for {
-      id <- makeDishes(OrderId(order.hashCode().toString), order.dishes)
+    for
+      id <- SaveOrder(order).asProgram
+      _  <- makeDishes(OrderId(order.hashCode().toString), order.dishes)
       _  <- UpdateInventory(currentInventory - order.asInventory).asProgram
       _  <- replaceStockIfNecessary(currentInventory, order.asInventory)
-    } yield id
+    yield id
   }
 
   private def replaceStockIfNecessary(
       currentInventory: Inventory,
       usedInventory: Inventory
   ): Program[RestaurantLogic, Unit] = {
-    for {
+    for
       strategy: Strategy <- getStrategy
       replacements = usedInventory.toMap.collect {
         case (key, count) if count < strategy.minQuantity =>
@@ -66,7 +68,7 @@ object RestaurantLogic:
       }
       _ <- log(s"replacement calculated: $replacements")
       _ <- if replacements.isEmpty then NoOp.asProgram else ReplaceStock(replacements).asProgram
-    } yield ()
+    yield ()
   }
 
   private def makeDishes(
@@ -76,10 +78,10 @@ object RestaurantLogic:
     dishes match {
       case Nil => Program.of(orderId)
       case next +: theRest =>
-        for {
+        for
           _ <- MakeDish(next).asProgram
           _ <- makeDishes(orderId, theRest)
-        } yield orderId
+        yield orderId
     }
   }
 

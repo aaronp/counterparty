@@ -76,10 +76,10 @@ object MarketplaceLogic:
     *   a program which returns either an out-of-stock response, or the order id
     */
   def placeOrder(order: Order): App[OutOfStockResponse | OrderId] = {
-    for {
+    for
       quotes <- SendOutRequestsForQuote(order).asProgram
       result <- splitOrders(order, quotes)
-    } yield result
+    yield result
   }
 
   /** Take the quotes and either send them out, or let the customer know one of their items is out
@@ -120,12 +120,12 @@ object MarketplaceLogic:
         }
       }
 
-      for {
+      for
         settings <- GetConfig.asProgram
         orderId  <- SaveOrder(originalOrder).asProgram
         distributorOrders = batched(settings.fullfillmentAddress, orderId)
         refs <- SendOrders(distributorOrders).asProgram
         _    <- SaveDistributors(orderId, refs).asProgram
-      } yield orderId
+      yield orderId
     }
   }

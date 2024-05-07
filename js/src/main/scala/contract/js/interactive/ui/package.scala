@@ -2,6 +2,10 @@ package contract.js.interactive
 
 package object ui {
 
+  export _root_.support.Colors
+  export _root_.support.Actor
+  export _root_.support.ActorType
+
   case class Point(x: Int, y: Int)
 
   opaque type Degrees = Double

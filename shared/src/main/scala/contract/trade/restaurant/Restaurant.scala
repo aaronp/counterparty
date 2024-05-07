@@ -11,46 +11,31 @@ trait Restaurant {
 
 object Restaurant {
 
-  def apply(how: [A] => RestaurantLogic[A] => Result[A])(using telemetry: Telemetry = Telemetry()) =
-    new Restaurant with RunnableProgram[RestaurantLogic] {
+  val Symbol = Actor.service[Restaurant]
 
-      override def appCoords                                     = Coords(this)
-      override def onInput[T](op: RestaurantLogic[T]): Result[T] = how(op)
+  class App(appLogic: [A] => RestaurantLogic[A] => Result[A])(using telemetry: Telemetry)
+      extends RunnableProgram[RestaurantLogic](appLogic)
+      with Restaurant {
 
-      override def placeOrder(order: Order): Task[OrderId | OrderRejection] = run(
-        RestaurantLogic.placeOrder(order)
-      )
-    }
+    override protected def appCoords = Symbol
 
-  def default(using telemetry: Telemetry = Telemetry()) = new Restaurant
-    with RunnableProgram[RestaurantLogic] {
-
-    override def appCoords = Coords(this)
-
-    override def onInput[A](op: RestaurantLogic[A]) = op match {
-      case RestaurantLogic.CheckInventory(ingredients) =>
-        Result.TraceTask(
-          Coords("inventory", "InventoryService"),
-          ZIO.succeed(Inventory(ingredients))
-        )
-      // Coords("inventory", "InventoryService") -> ZIO.succeed(Inventory(ingredients))
-      case RestaurantLogic.MakeDish(dish) =>
-        ZIO.succeed(PreparedOrder(dish, OrderId("1"))).asResult
-      case RestaurantLogic.UpdateInventory(newInventory) =>
-        Result.TraceTask(Coords("inventory", "InventoryService"), ZIO.succeed(()))
-      case RestaurantLogic.ReplaceStock(ingredients) =>
-        Result.TraceTask(Coords("supplier", "Marketplace"), ZIO.succeed(OrderId("1")))
-      case RestaurantLogic.Log(message) =>
-        ZIO.succeed(()).asResult
-      case RestaurantLogic.NoOp =>
-        ZIO.succeed(()).asResult
-      case RestaurantLogic.GetStrategy => ZIO.succeed(Strategy(3, 7)).asResult
+    // I tried to lift this up to RunnableProgram, but apparently doing this with the generic F[_] type
+    // was a bridget too far
+    def withOverride(overrideFn: PartialFunction[RestaurantLogic[?], Result[?]]): App = {
+      val newLogic: [A] => RestaurantLogic[A] => Result[A] = [A] => {
+        (_: RestaurantLogic[A]) match {
+          case value if overrideFn.isDefinedAt(value) =>
+            overrideFn(value).asInstanceOf[Result[A]]
+          case value => logic(value).asInstanceOf[Result[A]]
+        }
+      }
+      new App(newLogic)
     }
 
     override def placeOrder(order: Order): Task[OrderId | OrderRejection] = run(
       RestaurantLogic.placeOrder(order)
     )
   }
-
-  def main(args: Array[String]) = println("hi")
+  def apply(how: [A] => RestaurantLogic[A] => Result[A])(using telemetry: Telemetry = Telemetry()) =
+    new App(RestaurantDefaultLogic.defaultLogic)
 }

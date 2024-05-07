@@ -2,6 +2,7 @@ package contract
 
 import zio.*
 import contract.*
+import contract.trade.market.MarketplaceLogic
 
 import scala.annotation.targetName
 import scala.reflect.ClassTag
@@ -9,7 +10,9 @@ import scala.reflect.ClassTag
 /** This trait is a kind of convenience wrapper around our 'Program' ADT, providing the common (but
   * perhaps unfamiliar or confusing) 'foldMap' machinery we need to execute our program.
   */
-trait RunnableProgram[F[_]](using telemetry: Telemetry) {
+abstract class RunnableProgram[F[_]](val logic: [A] => F[A] => Result[A])(using
+    telemetry: Telemetry
+) {
 
   /** Run will execute this program using the 'onInput' to determine how to implement each operation
     *
@@ -22,13 +25,13 @@ trait RunnableProgram[F[_]](using telemetry: Telemetry) {
     */
   def run[A](fa: Program[F, A]): Task[A] = fa.foldMap[Task]
 
-  /** we need to get at the subclass 'Coords', not this trait's name (otherwise everything will just
+  /** we need to get at the subclass 'Actor', not this trait's name (otherwise everything will just
     * look like a RunnableProgram)
     * @return
     *   the 'coords' (category and service name) of this application. Typically just return
-    *   'Coords(this)' in sublasses
+    *   'Actor(this)' in sublasses
     */
-  protected def appCoords: Coords
+  protected def appCoords: Actor
 
   /** How do we want to handle the execution of our program?
     *
@@ -38,7 +41,7 @@ trait RunnableProgram[F[_]](using telemetry: Telemetry) {
     *   either a simple task if it's done in-process, or an 'Invoke' if it relies on calling another
     *   service
     */
-  def onInput[A](operation: F[A]): Result[A]
+  protected def onInput[A](operation: F[A]): Result[A] = logic(operation)
 
   /** Our 'traceOnInput' will add a call to our telemetry, giving us insight on the operations of
     * our program
@@ -52,8 +55,8 @@ trait RunnableProgram[F[_]](using telemetry: Telemetry) {
   private def traceOnInput[A](operation: F[A]): Task[A] = {
     onInput(operation) match {
       case Result.RunTask(task) => task // don't add a telemetry call
-      case Result.TraceTask(targetCoords, job) =>
-        appCoords.trace(job, targetCoords, operation)
+      case Result.TraceTask(targetCoords, job, inputOpt) =>
+        traceTask(job, appCoords, targetCoords, inputOpt.getOrElse(operation))
     }
   }
 
@@ -61,7 +64,9 @@ trait RunnableProgram[F[_]](using telemetry: Telemetry) {
   // needed for foldMap to work in our 'run' method
   @targetName("programAsTask")
   private given ~>[F, Task] with {
-    override def apply[A](fa: F[A]): Task[A] = traceOnInput(fa)
+    override def apply[A](fa: F[A]): Task[A] =
+      if runTrace then traceOnInput(fa) else onInput(fa).task
   }
 
+  protected def runTrace: Boolean = true
 }

@@ -50,6 +50,9 @@ import zio.{Runtime, Task, Unsafe}
   */
 package object contract {
 
+  export support.Actor
+  export support.ConsoleColors
+
   // for readability (and type-checking, and flexibility), we'll create some type-aliases.
   // this will help the compiler enforce correctness rather than us having to write additional tests
 

@@ -34,22 +34,22 @@ trait EnactContract {
       (signatureA, signatureB) match {
         case (NotSignedReason(reasonA), NotSignedReason(reasonB)) =>
           SignDraftContract200Response(false, false, Option(reasonA), Option(reasonB))
-        case (NotSignedReason(reasonA), refB: CounterpartyRef) =>
+        case (NotSignedReason(reasonA), _: CounterpartyRef) =>
           SignDraftContract200Response(false, true, Option(reasonA), None)
-        case (refA: CounterpartyRef, NotSignedReason(reasonB)) =>
+        case (_: CounterpartyRef, NotSignedReason(reasonB)) =>
           SignDraftContract200Response(true, false, None, Option(reasonB))
-        case (refA: CounterpartyRef, refB: CounterpartyRef) =>
+        case (refA: CounterpartyRef, _: CounterpartyRef) =>
           SignDraftContract200Response(true, true)
-      }
+      }: @unchecked
     }
 
     def apply[T](request: SignContract): Program[EnactContractLogic, SignDraftContract200Response] =
-      for {
+      for
         _        <- LogMessage("Signing contracts").asProgram
         processA <- RequestSignatureA(CounterpartyRef(request.referenceA)).asProgram
         processB <- RequestSignatureB(CounterpartyRef(request.referenceB)).asProgram
         signatureA: SignatureResult <- Wait(processA).asProgram
         signatureB                  <- Wait(processB).asProgram
-      } yield asResult(signatureA, signatureB)
+      yield asResult(signatureA, signatureB)
 
 }

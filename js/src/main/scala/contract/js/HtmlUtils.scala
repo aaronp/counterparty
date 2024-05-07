@@ -83,7 +83,7 @@ trait HtmlUtils {
   }
   val debugOn = true
   def debug(text: String): Unit = {
-    if (debugOn) {
+    if debugOn then {
       log(text)
     }
   }
