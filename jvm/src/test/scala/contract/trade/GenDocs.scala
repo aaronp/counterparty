@@ -60,22 +60,18 @@ def endToEndFlow = {
         val value: Quantity = quantity.asQuantity
         (key, value)
       }
-      println("placing for " + asBasket)
 
       val replacementOrder = Order(asBasket.toMap, Address("The", "Restaurant", "Address"))
       marketPlaceSetup.underTest
         .placeOrder(replacementOrder)
         .map { orderId =>
-          println("place order returned " + orderId)
           orderId.toString.asDistributorOrderRef
         }
-        .asResultTraced(Marketplace.Symbol)
+        .taskAsResultTraced(Marketplace.Symbol)
 
   }
 
   val result = endToEnd.placeOrder(restaurantSetup.order).execOrThrow()
-  println(result)
-  // testData.result.ensuring(_ != null) // <-- we have to evaluate this / run
   telemetry.calls.execOrThrow().foreach(println)
 
   val mermaid = telemetry.asMermaidDiagram().execOrThrow()

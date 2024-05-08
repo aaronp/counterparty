@@ -67,7 +67,7 @@ trait MarketplaceTestLogic {
                   order
                 )
             }
-            .asResult // we don't want to trace the market -> market wrapper job, so just return a normal result
+            .taskAsResult // we don't want to trace the market -> market wrapper job, so just return a normal result
         case input @ SendOrders(orders) =>
           val listResult = ZIO.foreachPar(orders) {
             case DistributorOrder(distributor, orderPortion, orderId) =>
@@ -84,7 +84,7 @@ trait MarketplaceTestLogic {
                 )
                 .as(tuple) // <-- we trace this task, but ultimately return this from our function
           }
-          listResult.map(_.toMap).asResult
+          listResult.map(_.toMap).taskAsResult
       }
     }
 }

@@ -266,6 +266,8 @@ final class Call(
     response: Ref[CallResponse]
 ) {
 
+  override def toString = invocation.toString
+
   def asCompletedCall: UIO[CompletedCall] = {
     response.get.map { resp =>
       CompletedCall(invocation, resp)

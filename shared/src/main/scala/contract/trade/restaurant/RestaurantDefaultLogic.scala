@@ -18,10 +18,11 @@ trait RestaurantDefaultLogic {
       case RestaurantLogic.ReplaceStock(ingredients) =>
         s"replace-${ingredients.size}".asReplacementOrderRef
           .asResultTraced(Actor("supplier", "Marketplace").service)
-      case RestaurantLogic.Log(message) => ().asResult
-      case RestaurantLogic.NoOp         => ().asResult
+      case RestaurantLogic.Log(message) =>
+        Console.println(message).asResult
+      case RestaurantLogic.NoOp => Console.println("no-op").asResult
       case RestaurantLogic.GetStrategy =>
-        Strategy(3, 7).asResultTraced(Actor.service[Restaurant])
+        Strategy(30, 7).asResultTraced(Actor.service[Restaurant])
       case RestaurantLogic.SaveOrder(order) =>
         OrderId(s"order-${order.dishes.size}").asResultTraced(Actor.service[Restaurant])
     }
