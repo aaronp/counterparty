@@ -26,10 +26,8 @@ ThisBuild / scalacOptions ++= Seq(
   "-deprecation",
   "-feature",
   "-unchecked",
-  "-rewrite",//-rewrite -source 3.4-migration
-  "-new-syntax",
-//  "-explain",
-  "-source 3.4-migration"
+  "-rewrite",
+  "-new-syntax"
 )
 
 lazy val generated = project.in(file("generated"))

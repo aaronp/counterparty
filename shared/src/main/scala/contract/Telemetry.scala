@@ -123,7 +123,7 @@ object Telemetry {
       mermaidBuffer: Seq[String] = Vector()
   ): Seq[String] = {
 
-    def truncate(owt: Any, len: Int = 15) =
+    def truncate(owt: Any, len: Int = 85) =
       val opString = owt.toString
       if opString.length > len then opString.take(len - 3) + "..." else opString
 
@@ -247,7 +247,7 @@ final case class CompletedCall(invocation: CallSite, response: CallResponse) {
   def operationArrow = s"--[ $operation ]-->"
 
   def toStringColor =
-    s"$timestamp: ${blue(source.toString)} ${purple(operationArrow)} ${yellow(target.toString)} $resultText and took $duration at $atDateTime"
+    s"${blue(source.toString)} ${purple(operationArrow)} ${yellow(target.toString)} $resultText and took $duration at $atDateTime"
 }
 
 /** Represents a Call invocation -- something we'd want to capture in our archtiecture (i.e. a
@@ -265,6 +265,8 @@ final class Call(
     invocation: CallSite,
     response: Ref[CallResponse]
 ) {
+
+  override def toString = invocation.toString
 
   def asCompletedCall: UIO[CompletedCall] = {
     response.get.map { resp =>

@@ -143,7 +143,9 @@ extension [A](job: Task[A]) {
   def execOrThrow(): A = Unsafe.unsafe { implicit unsafe =>
     Runtime.default.unsafe.run(job).getOrThrowFiberFailure()
   }
-  def asResult: Result[A] = Result.RunTask(job)
+  def taskAsResult: Result[A] = Result.RunTask(job)
+  def taskAsResultTraced(targetSystem: Actor, input: Any = null): Result[A] =
+    Result.TraceTask(targetSystem, job, Option(input))
 }
 
 /** Trace this call to the given 'target' service / database / whatever

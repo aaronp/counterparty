@@ -12,16 +12,12 @@ object Colors:
   def names = Seq(
     "green",
     "blue",
-    "orange",
-    "red",
+    // "orange",
+    // "red",
     "purple",
-    "cyan",
-    "magenta",
-    "yellow",
-    "black",
     "gray",
-    "brown",
-    "pink"
+    "brown"
+    // "pink"
   )
   def lightNames: Seq[String] = {
     Seq(

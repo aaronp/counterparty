@@ -1,7 +1,7 @@
 package contract.trade
 
 import contract.*
-import contract.trade.restaurant.*
+import contract.trade.restaurant.{Order => ROrder, *}
 import contract.trade.market.*
 import eie.io.{given, *}
 import scala.language.implicitConversions
@@ -47,34 +47,43 @@ def marketFlow = {
   Scenario("Marketplace", input.toString, mermaid)
 }
 
-def complexFlow = {
+def endToEndFlow = {
   given telemetry: Telemetry = Telemetry()
 
   val marketPlaceSetup = new MarketplaceTestData
   val restaurantSetup  = new RestaurantTestData
 
-  restaurantSetup.restaurant.withOverride { case RestaurantLogic.ReplaceStock(inventory) =>
-    val asBasket = inventory.map { case (item, quantity) =>
-      (item.asItem, quantity.asQuantity)
-    }
-    val replacementOrder = Order(asBasket.toMap, Address("The", "Restaurant", "Address"))
-    marketPlaceSetup.underTest
-      .placeOrder(replacementOrder)
-      .asResultTraced(Restaurant.Symbol.withName("ReplaceStock"))
+  val endToEnd = restaurantSetup.restaurant.withOverride {
+    case RestaurantLogic.ReplaceStock(inventory) =>
+      val asBasket = inventory.map { case (ingredient: Ingredient, quantity: Int) =>
+        val key: Item       = ingredient.name.asItem
+        val value: Quantity = quantity.asQuantity
+        (key, value)
+      }
+
+      val replacementOrder = Order(asBasket.toMap, Address("The", "Restaurant", "Address"))
+      marketPlaceSetup.underTest
+        .placeOrder(replacementOrder)
+        .map { orderId =>
+          orderId.toString.asDistributorOrderRef
+        }
+        .taskAsResultTraced(Marketplace.Symbol)
+
   }
 
-  // testData.result.ensuring(_ != null) // <-- we have to evaluate this / run
+  val result = endToEnd.placeOrder(restaurantSetup.order).execOrThrow()
   telemetry.calls.execOrThrow().foreach(println)
 
   val mermaid = telemetry.asMermaidDiagram().execOrThrow()
-  Scenario("Complex", restaurantSetup.order.toString, mermaid)
+  Scenario("End to End", restaurantSetup.order.toString, mermaid)
 }
 
 @main def genDocs() = {
 
   val scenarios = List(
     restaurantFlow,
-    marketFlow
+    marketFlow,
+    endToEndFlow
   )
 
   val header = """# Scenarios
