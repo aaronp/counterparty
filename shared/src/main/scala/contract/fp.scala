@@ -161,7 +161,7 @@ private def traceTask[A](job: Task[A], source: Actor, target: Actor, input: Any)
     telemetry: Telemetry
 ): Task[A] = {
   for
-    call <- telemetry.onCall(source, target, input)
+    call   <- telemetry.onCall(source, target, input)
     result <- call.completeWith(job)
   yield result
 }
