@@ -34,11 +34,11 @@ trait EnactContract {
       (signatureA, signatureB) match {
         case (NotSignedReason(reasonA), NotSignedReason(reasonB)) =>
           SignDraftContract200Response(false, false, Option(reasonA), Option(reasonB))
-        case (NotSignedReason(reasonA), _: CounterpartyRef) =>
+        case (NotSignedReason(reasonA), _) =>
           SignDraftContract200Response(false, true, Option(reasonA), None)
-        case (_: CounterpartyRef, NotSignedReason(reasonB)) =>
+        case (_, NotSignedReason(reasonB)) =>
           SignDraftContract200Response(true, false, None, Option(reasonB))
-        case (refA: CounterpartyRef, _: CounterpartyRef) =>
+        case (_, _) =>
           SignDraftContract200Response(true, true)
       }: @unchecked
     }

@@ -9,7 +9,7 @@ enum RestaurantLogic[A]:
   case MakeDish(dish: Dish)                            extends RestaurantLogic[PreparedOrder]
   case UpdateInventory(newInventory: Inventory)        extends RestaurantLogic[Unit]
   case SaveOrder(order: Order)                         extends RestaurantLogic[OrderId]
-  case ReplaceStock(ingredients: Map[Ingredient, Int]) extends RestaurantLogic[OrderId]
+  case ReplaceStock(ingredients: Map[Ingredient, Int]) extends RestaurantLogic[ReplacementOrderRef]
   case Log(message: String)                            extends RestaurantLogic[Unit]
   case NoOp                                            extends RestaurantLogic[Unit]
 

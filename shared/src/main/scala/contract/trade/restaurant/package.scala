@@ -63,6 +63,9 @@ package object restaurant {
 
   case class PreparedOrder(dish: Dish, orderId: OrderId)
 
+  opaque type ReplacementOrderRef = String
+  extension (ref: String) def asReplacementOrderRef: ReplacementOrderRef = ref
+
   opaque type OrderId = String
   object OrderId:
     def apply(value: String): OrderId = value

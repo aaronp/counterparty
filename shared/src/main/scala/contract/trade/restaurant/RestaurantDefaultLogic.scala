@@ -16,7 +16,7 @@ trait RestaurantDefaultLogic {
       case RestaurantLogic.UpdateInventory(newInventory) =>
         ().asResultTraced(Actor.service("inventory", "InventoryService"))
       case RestaurantLogic.ReplaceStock(ingredients) =>
-        OrderId(s"order-${ingredients.size}")
+        s"replace-${ingredients.size}".asReplacementOrderRef
           .asResultTraced(Actor("supplier", "Marketplace").service)
       case RestaurantLogic.Log(message) => ().asResult
       case RestaurantLogic.NoOp         => ().asResult

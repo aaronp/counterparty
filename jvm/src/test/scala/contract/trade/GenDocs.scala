@@ -47,6 +47,29 @@ def marketFlow = {
   Scenario("Marketplace", input.toString, mermaid)
 }
 
+def complexFlow = {
+  given telemetry: Telemetry = Telemetry()
+
+  val marketPlaceSetup = new MarketplaceTestData
+  val restaurantSetup  = new RestaurantTestData
+
+  restaurantSetup.restaurant.withOverride { case RestaurantLogic.ReplaceStock(inventory) =>
+    val asBasket = inventory.map { case (item, quantity) =>
+      (item.asItem, quantity.asQuantity)
+    }
+    val replacementOrder = Order(asBasket.toMap, Address("The", "Restaurant", "Address"))
+    marketPlaceSetup.underTest
+      .placeOrder(replacementOrder)
+      .asResultTraced(Restaurant.Symbol.withName("ReplaceStock"))
+  }
+
+  // testData.result.ensuring(_ != null) // <-- we have to evaluate this / run
+  telemetry.calls.execOrThrow().foreach(println)
+
+  val mermaid = telemetry.asMermaidDiagram().execOrThrow()
+  Scenario("Complex", restaurantSetup.order.toString, mermaid)
+}
+
 @main def genDocs() = {
 
   val scenarios = List(

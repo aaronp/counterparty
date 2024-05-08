@@ -57,25 +57,25 @@ sequenceDiagram
 	box green market
 	participant market.Marketplace 🖥️
 	participant market.Config 🖥️
-	participant market.DB 🖥️
+	participant market.DB 🗄️
 	end
 	box blue distributor
-	participant distributor.everything's £100 🖥️
-	participant distributor.vowels are £5 🖥️
+	participant distributor.vowels are £5 👤
+	participant distributor.everything's £100 👤
 	end
-	market.Marketplace 🖥️ ->>+ distributor.everything's £100 🖥️ : Order(Map(eg...
-	market.Marketplace 🖥️ ->> distributor.vowels are £5 🖥️ : Order(Map(eg...
-	distributor.vowels are £5 🖥️ -->> market.Marketplace 🖥️ : Returned 'RFQResponse(vowels are £5,Map(eggs -> 5.0))'
-	distributor.everything's £100 🖥️ -->>- market.Marketplace 🖥️ : Returned 'RFQResponse(everything's £100,Map(eggs -> 100.0, brocoli -> 100.0))'
+	market.Marketplace 🖥️ ->>+ distributor.vowels are £5 👤 : Order(Map(eg...
+	market.Marketplace 🖥️ ->> distributor.everything's £100 👤 : Order(Map(eg...
+	distributor.everything's £100 👤 -->> market.Marketplace 🖥️ : Returned 'RFQResponse(everything's £100,Map(eggs -> 100.0, brocoli -> 100.0))'
+	distributor.vowels are £5 👤 -->>- market.Marketplace 🖥️ : Returned 'RFQResponse(vowels are £5,Map(eggs -> 5.0))'
 	market.Marketplace 🖥️ ->> market.Config 🖥️ : GetConfig
 	market.Config 🖥️ -->> market.Marketplace 🖥️ : Returned 'Settings(1 second,Address(Override,Street,Eyam))'
-	market.Marketplace 🖥️ ->> market.DB 🖥️ : SaveOrder(Or...
-	market.DB 🖥️ -->> market.Marketplace 🖥️ : Returned '-1271033017'
-	market.Marketplace 🖥️ ->> distributor.vowels are £5 🖥️ : SendOrders(L...
-	distributor.vowels are £5 🖥️ -->> market.Marketplace 🖥️ : Returned 'Order(Map(eggs -> 3),Address(Override,Street,Eyam))'
-	market.Marketplace 🖥️ ->> distributor.everything's £100 🖥️ : SendOrders(L...
-	distributor.everything's £100 🖥️ -->> market.Marketplace 🖥️ : Returned 'Order(Map(brocoli -> 1),Address(Override,Street,Eyam))'
-	market.Marketplace 🖥️ ->> market.DB 🖥️ : SaveDistribu...
+	market.Marketplace 🖥️ ->> market.DB 🗄️ : SaveOrder(Or...
+	market.DB 🗄️ -->> market.Marketplace 🖥️ : Returned '-1271033017'
+	market.Marketplace 🖥️ ->> distributor.vowels are £5 👤 : SendOrders(L...
+	distributor.vowels are £5 👤 -->> market.Marketplace 🖥️ : Returned 'Order(Map(eggs -> 3),Address(Override,Street,Eyam))'
+	market.Marketplace 🖥️ ->> distributor.everything's £100 👤 : SendOrders(L...
+	distributor.everything's £100 👤 -->> market.Marketplace 🖥️ : Returned 'Order(Map(brocoli -> 1),Address(Override,Street,Eyam))'
+	market.Marketplace 🖥️ ->> market.DB 🗄️ : SaveDistribu...
 ```
 
    

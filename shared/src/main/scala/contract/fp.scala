@@ -53,7 +53,7 @@ object State:
   given generic[S]: Monad[[A] =>> State[S, A]] with
     def pure[A](a: A): State[S, A] = State(s => (a, s))
 
-    def flatMap[A, B](fa: State[S, A], f: A => State[S, B]) = fa flatMap f
+    def flatMap[A, B](fa: State[S, A], f: A => State[S, B]) = fa.flatMap(f)
 
 end State
 
@@ -112,8 +112,8 @@ enum Program[F[_], A]:
     case Pure(value) => Monad[G].pure(value)
     case Suspend(fa) => nt(fa)
     case FlatMap(inner, f) =>
-      val ge = inner.foldMap(Monad[G], nt)
-      Monad[G].flatMap(ge, in => f(in).foldMap(Monad[G], nt))
+      val ge = inner.foldMap(using Monad[G], nt)
+      Monad[G].flatMap(ge, in => f(in).foldMap(using Monad[G], nt))
   }
 
 object Program:

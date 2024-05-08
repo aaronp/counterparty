@@ -5,15 +5,16 @@ import scala.concurrent.duration.*
 import contract.*
 import contract.trade.market.MarketplaceLogic.*
 import zio.ZIO
+import support.ActorType
 
 object MarketplaceTestLogic extends MarketplaceTestLogic
 
 trait MarketplaceTestLogic {
 
   private val everythingIs100: Distributor = "everything's £100".asDistributor
-  private def everythingIs100Coords = Actor.service("distributor", everythingIs100.distributorName)
+  private def everythingIs100Coords = Actor.person("distributor", everythingIs100.distributorName)
   private val vowelsAreAFiver: Distributor = "vowels are £5".asDistributor
-  private def vowelsAreAFiverCoords = Actor.service("distributor", vowelsAreAFiver.distributorName)
+  private def vowelsAreAFiverCoords = Actor.person("distributor", vowelsAreAFiver.distributorName)
 
   extension (char: Char) {
     def isVowel: Boolean = "aeiou".contains(char.toLower)
@@ -33,18 +34,20 @@ trait MarketplaceTestLogic {
     prices
   }
 
+  def MarketDB = Marketplace.Symbol.withName("DB").withType(ActorType.Database)
+
   def defaultLogic(using telemetry: Telemetry): [A] => MarketplaceLogic[A] => Result[A] =
     [A] => {
       (_: MarketplaceLogic[A]) match {
         case GetConfig =>
           Settings(2.seconds, Address("1", "2", "3")).asResultTraced(
-            Marketplace.Symbol.withName("Config")
+            Marketplace.Symbol.withName("Config").withType(ActorType.FileSystem)
           )
         case SaveOrder(order) =>
           (order.hashCode().toString.asOrderId: OrderId)
-            .asResultTraced(Marketplace.Symbol.withName("DB"))
+            .asResultTraced(MarketDB)
         case SaveDistributors(orderId, sentTo) =>
-          ().asResultTraced(Marketplace.Symbol.withName("DB"))
+          ().asResultTraced(MarketDB)
         case input @ SendOutRequestsForQuote(order) =>
           // here we explicitly trace the calls we make, as they are internal to the ultimate 'Task' we return
           // that is to say, there is a granularity here we don't want to lose
@@ -76,7 +79,7 @@ trait MarketplaceTestLogic {
               orderPortion
                 .asTaskTraced(
                   Marketplace.Symbol,
-                  Actor.service("distributor", distributor.distributorName),
+                  Actor.person("distributor", distributor.distributorName),
                   input
                 )
                 .as(tuple) // <-- we trace this task, but ultimately return this from our function
