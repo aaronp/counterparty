@@ -1,0 +1,209 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "description" : "API for managing draft contracts",
+    "title" : "Contract Management API",
+    "version" : "1.0.0"
+  },
+  "servers" : [ {
+    "description" : "Development server",
+    "url" : "http://localhost:8080"
+  } ],
+  "paths" : {
+    "/v1/contract" : {
+      "post" : {
+        "description" : "This endpoint allows creating a new draft contract with specified details.",
+        "operationId" : "createContract",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/createContract_request"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreateDraftResponse"
+                }
+              }
+            },
+            "description" : "Draft contract created successfully"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/createContract_400_response"
+                }
+              }
+            },
+            "description" : "Invalid input received"
+          },
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/createContract_500_response"
+                }
+              }
+            },
+            "description" : "Internal server error"
+          }
+        },
+        "summary" : "Create a new draft contract"
+      }
+    },
+    "/v1/sign" : {
+      "post" : {
+        "description" : "This endpoint receives references for a draft contract and returns signature status for each counterparty.",
+        "operationId" : "signDraftContract",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/signDraftContract_request"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/signDraftContract_200_response"
+                }
+              }
+            },
+            "description" : "Signature status retrieved successfully"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/createContract_400_response"
+                }
+              }
+            },
+            "description" : "Invalid input received"
+          },
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/signDraftContract_500_response"
+                }
+              }
+            },
+            "description" : "Internal server error"
+          }
+        },
+        "summary" : "Receive signature status for draft contract"
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CreateDraftResponse" : {
+        "properties" : {
+          "firstCounterpartyRef" : {
+            "description" : "The reference identifier for the first counterparty.",
+            "type" : "string"
+          },
+          "secondCounterpartyRef" : {
+            "description" : "The reference identifier for the second counterparty.",
+            "type" : "string"
+          }
+        }
+      },
+      "createContract_request" : {
+        "properties" : {
+          "firstCounterparty" : {
+            "description" : "The name of the first counterparty in the contract.",
+            "type" : "string"
+          },
+          "secondCounterparty" : {
+            "description" : "The name of the second counterparty in the contract.",
+            "type" : "string"
+          },
+          "terms" : {
+            "description" : "The terms agreed upon in the contract.",
+            "type" : "string"
+          },
+          "conditions" : {
+            "description" : "The conditions of the contract.",
+            "type" : "string"
+          }
+        },
+        "required" : [ "conditions", "firstCounterparty", "secondCounterparty", "terms" ]
+      },
+      "createContract_400_response" : {
+        "properties" : {
+          "error" : {
+            "description" : "A message detailing the error with the provided input.",
+            "type" : "string"
+          }
+        }
+      },
+      "createContract_500_response" : {
+        "properties" : {
+          "error" : {
+            "description" : "A message detailing an internal error that prevented the contract creation.",
+            "type" : "string"
+          }
+        }
+      },
+      "signDraftContract_request" : {
+        "properties" : {
+          "referenceA" : {
+            "description" : "Reference identifier for counterparty A.",
+            "type" : "string"
+          },
+          "referenceB" : {
+            "description" : "Reference identifier for counterparty B.",
+            "type" : "string"
+          }
+        },
+        "required" : [ "referenceA", "referenceB" ]
+      },
+      "signDraftContract_200_response" : {
+        "properties" : {
+          "counterpartyASigned" : {
+            "description" : "Indicates if counterparty A has signed the contract.",
+            "type" : "boolean"
+          },
+          "counterpartyBSigned" : {
+            "description" : "Indicates if counterparty B has signed the contract.",
+            "type" : "boolean"
+          },
+          "counterpartyANotSignedReason" : {
+            "description" : "Reason why counterparty A has not signed the contract.",
+            "type" : "string",
+            "nullable" : true
+          },
+          "counterpartyBNotSignedReason" : {
+            "description" : "Reason why counterparty B has not signed the contract.",
+            "type" : "string",
+            "nullable" : true
+          }
+        },
+        "required" : [ "counterpartyASigned", "counterpartyBSigned" ]
+      },
+      "signDraftContract_500_response" : {
+        "properties" : {
+          "error" : {
+            "description" : "A message detailing an internal error.",
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}
