@@ -13,6 +13,9 @@ endif
 runUI:
 	npm run dev
 
+packageUI:
+	sbt fastOptJS && npm run build && npm run package
+
 # cleans the whole project (the generated REST service files and these project files)
 clean: cleanDiagram cleanRest
 	sbt clean

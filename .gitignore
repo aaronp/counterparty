@@ -10,3 +10,5 @@ node_modules
 .bloop
 .metals
 /project/project
+dist
+vite-app.zip
