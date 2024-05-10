@@ -24,10 +24,10 @@ object TestData {
   val List(alice, lawyer, mongo, queue, service, etl, email, bob) = actors
   // val List(alice, bob) = actors
   val messages: List[SendMessage] = List(
-    SendMessage(alice, service, 1234, 1.seconds, ujson.Obj("hello" -> "world")),
-    SendMessage(alice, bob, 1234, 1.seconds, ujson.Obj("hello" -> "world")),
-    SendMessage(service, mongo, 2345, 2.seconds, ujson.Obj("hello" -> "world")),
-    SendMessage(alice, service, 1234, 10.seconds, ujson.Obj("go" -> "there"))
+    SendMessage(alice, service, 1234, 1.seconds, "-->>", ujson.Obj("hello" -> "world")),
+    SendMessage(alice, bob, 1234, 1.seconds, "-->>", ujson.Obj("hello" -> "world")),
+    SendMessage(service, mongo, 2345, 2.seconds, "-->>", ujson.Obj("hello" -> "world")),
+    SendMessage(alice, service, 1234, 10.seconds, "-->>", ujson.Obj("go" -> "there"))
   )
 
   val config = Config.default()

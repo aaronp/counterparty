@@ -39,7 +39,7 @@ object InteractiveComponent {
               line("At:", s"${msg.timestamp}"),
               line("Took:", s"${msg.duration.toMillis}ms"),
               h3("Message:"),
-              p(msg.message.message.render(2))
+              p(msg.message.messageFormatted)
             ).render
           )
 

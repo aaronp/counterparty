@@ -51,6 +51,7 @@ object SvgInterpreter {
               mongo,
               inc(),
               150.millis,
+              "-->>",
               writeJs(draft.asData)
             )
           ).asState(result)
@@ -63,6 +64,7 @@ object SvgInterpreter {
               queue,
               now,
               250.millis,
+              "-->>",
               ujson.Obj(
                 "to"       -> "partyA",
                 "ref"      -> contract.id.toString(),
@@ -74,6 +76,7 @@ object SvgInterpreter {
               adapterA,
               now + 500,
               50.millis,
+              "-->>",
               ujson.Obj("emailBody" -> "dear")
             ),
             SendMessage(
@@ -81,6 +84,7 @@ object SvgInterpreter {
               email,
               now + 600,
               800.millis,
+              "-->>",
               ujson.Obj("emailBody" -> "dear sir or madam...")
             ),
             SendMessage(
@@ -88,6 +92,7 @@ object SvgInterpreter {
               contractService,
               now + 600,
               500.millis,
+              "-->>",
               ujson.Obj("ref" -> result.toString())
             ),
             SendMessage(
@@ -95,6 +100,7 @@ object SvgInterpreter {
               bob,
               now + 1100,
               500.millis,
+              "-->>",
               ujson.Obj("emailBody" -> "dear sir or madam...")
             )
           ).asState(result)
@@ -107,6 +113,7 @@ object SvgInterpreter {
               queue,
               now,
               250.millis,
+              "-->>",
               ujson.Obj(
                 "to"       -> "partyA",
                 "ref"      -> contract.id.toString(),
@@ -118,6 +125,7 @@ object SvgInterpreter {
               adapterB,
               now + 700,
               150.millis,
+              "-->>",
               ujson.Obj("record" -> "CRM entry...")
             ),
             SendMessage(
@@ -125,6 +133,7 @@ object SvgInterpreter {
               crm,
               now + 800,
               450.millis,
+              "-->>",
               ujson.Obj("emailBody" -> "dear sir or madam...")
             ),
             SendMessage(
@@ -132,6 +141,7 @@ object SvgInterpreter {
               contractService,
               now + 850,
               500.millis,
+              "-->>",
               ujson.Obj("ref" -> result.toString())
             ),
             SendMessage(
@@ -139,6 +149,7 @@ object SvgInterpreter {
               susie,
               now + 1800,
               500.millis,
+              "-->>",
               ujson.Obj("open" -> "reads CRM report...")
             )
           ).asState(result)

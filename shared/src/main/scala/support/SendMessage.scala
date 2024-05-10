@@ -11,11 +11,18 @@ case class SendMessage(
     to: Actor,
     timestamp: Long,
     duration: Duration,
-    message: ujson.Value
+    arrow: String, // the mermaid arrow. This is a bit hacky
+    message: Any,
+    comment: String = ""
 ) {
   def endTimestamp = timestamp + duration.toMillis
 
   def isActiveAt(time: Long) = timestamp <= time && time <= timestamp + duration.toMillis
+
+  def messageFormatted = message match {
+    case json: ujson.Value => json.render(2)
+    case other             => other.toString()
+  }
 }
 
 object SendMessage {
@@ -24,6 +31,7 @@ object SendMessage {
     support.Actor.person("bar", "carl"),
     1234,
     10.seconds,
+    "-->>",
     ujson.Obj("hello" -> "world")
   )
 
@@ -58,14 +66,26 @@ object SendMessage {
       if opString.length > len then opString.take(len - 3) + "..." else opString
 
     def selfCall(call: CompletedCall): SendMessage = {
-
-      // s"${call.source} ->> ${call.target} : ${truncate(call.operation)} ${truncate(commentForResult(call), 30)}"
-      ???
+      SendMessage(
+        call.source,
+        call.source, // check: This was cal.target in Telemetry
+        call.timestamp,
+        call.duration.getOrElse(Duration.Inf),
+        "->>",
+        call.operation
+      )
     }
 
     def startCall(call: CompletedCall, arrow: String): SendMessage = {
       // s"${call.source} $arrow ${call.target} : ${truncate(call.operation)}"
-      ???
+      SendMessage(
+        call.source,
+        call.target,
+        call.timestamp,
+        call.duration.getOrElse(Duration.Inf),
+        arrow,
+        call.operation
+      )
     }
 
     def commentForResult(call: CompletedCall) = call.response match {
@@ -75,13 +95,20 @@ object SendMessage {
     }
 
     def endCall(call: CompletedCall, arrow: String): Option[SendMessage] = call.response match {
-      case CallResponse.NotCompleted    => None
-      case CallResponse.Error(_, error) =>
+      case CallResponse.NotCompleted => None
+      case _                         =>
         // Some(s"${call.target} $arrow ${call.source} : ${commentForResult(call)}")
-        ???
-      case CallResponse.Completed(_, result) =>
-        // Some(s"${call.target} $arrow ${call.source} : ${commentForResult(call)}")
-        ???
+        Option(
+          SendMessage(
+            call.target,
+            call.source,
+            call.timestamp,
+            call.duration.getOrElse(Duration.Inf),
+            arrow,
+            call.operation,
+            commentForResult(call)
+          )
+        )
     }
 
     // NOTE - this is technically inefficient, but we're talking about lists of 2 or 3 items

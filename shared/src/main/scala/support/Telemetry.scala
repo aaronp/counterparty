@@ -5,6 +5,7 @@ import zio.*
 
 import java.util.concurrent.TimeUnit
 import scala.reflect.ClassTag
+import scala.concurrent.duration.{given, *}
 
 /** Telemetry is a trait which allows us to track the calls made in our system, which we can later
   * use to show what happened
@@ -224,14 +225,14 @@ final case class CompletedCall(invocation: CallSite, response: CallResponse) {
     case Some(end) => end >= timestamp
   }
 
-  private def fmtDuration(end: Long, start: Long) = {
-    val millis = (end.toDouble - start.toDouble) / 1000000
+  def durationFormatted: String = duration.fold("♾️") { nanos =>
+    val millis = nanos.toNanos.toDouble / 1000000
     f"$millis%.4fms"
   }
-  def duration = response match {
-    case CallResponse.Error(end, _)     => fmtDuration(end, timestamp)
-    case CallResponse.Completed(end, _) => fmtDuration(end, timestamp)
-    case CallResponse.NotCompleted      => "♾️"
+  def duration: Option[FiniteDuration] = response match {
+    case CallResponse.Error(end, _)     => Option((end - timestamp).nanos)
+    case CallResponse.Completed(end, _) => Option((end - timestamp).nanos)
+    case CallResponse.NotCompleted      => None
   }
 
   def resultText = response match {
