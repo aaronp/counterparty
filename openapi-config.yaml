@@ -1,5 +1,5 @@
 artifactId: contract
-artifactVersion: "0.0.1-SNAPSHOT"
+artifactVersion: "0.4.0"
 groupId: "com.github.aaronp"
 packageName: "contract"
 modelPackage: "contract.model"

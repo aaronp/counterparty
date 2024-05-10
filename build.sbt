@@ -7,13 +7,14 @@ ThisBuild / scalaVersion := "3.4.1"
 ThisBuild / scalafmtOnCompile := true
 ThisBuild / versionScheme := Some("early-semver")
 
+val ContractApiVersion = "0.4.0"
 
 // Common settings
 lazy val commonSettings = Seq(
   buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
   buildInfoPackage := "counterparties.buildinfo",
   // this is our model libraries, generated from the service.yaml and created/publised via 'make packageRestCode'
-  libraryDependencies += "com.github.aaronp" %%% "contract" % "0.0.3",
+  libraryDependencies += "com.github.aaronp" %%% "contract" % ContractApiVersion,
   libraryDependencies ++= Seq(
     "dev.zio" %%% "zio" % "2.0.22",
     "org.scalatest" %%% "scalatest" % "3.2.18" % Test,
@@ -45,7 +46,7 @@ lazy val app = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   jvmSettings(
     libraryDependencies ++= Seq(
       "com.lihaoyi" %% "cask" % "0.9.2",
-    "com.github.aaronp" %% "eie" % "2.0.1" % Test)
+      "com.github.aaronp" %% "eie" % "2.0.1" % Test)
   ).
   jsSettings(
     scalaJSUseMainModuleInitializer := true,

@@ -1,6 +1,8 @@
 package contract.js.interactive.ui
 
 import contract.js.interactive.*
+import support.*
+
 import scalatags.JsDom
 import scalatags.JsDom.TypedTag
 import org.scalajs.dom.Node

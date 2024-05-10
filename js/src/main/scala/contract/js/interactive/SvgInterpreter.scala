@@ -6,6 +6,7 @@ import CreateDraftLogic.*
 import scala.concurrent.duration.{given, *}
 import upickle.default.*
 import contract.model.CreateDraftResponse
+import support.*
 
 object SvgInterpreter {
 
@@ -30,7 +31,7 @@ object SvgInterpreter {
   // we need a natural transformation to convert our operation types
   // into a 'BufferState' -- which is something that just keeps a
   // list of the operations called and their responses
-  @targetName("createDraftLogicAsMermaid")
+  @targetName("createDraftLogicAsSvg")
   given ~>[CreateDraftLogic, FoldState] with
     def apply[A](op: CreateDraftLogic[A]): State[FoldData, A] = {
       var clock = 0L

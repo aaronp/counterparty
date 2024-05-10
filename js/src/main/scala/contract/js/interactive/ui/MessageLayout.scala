@@ -1,6 +1,7 @@
 package contract.js.interactive.ui
 
 import contract.js.interactive.*
+import support.*
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*

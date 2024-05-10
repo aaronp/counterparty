@@ -32,5 +32,5 @@ class Service(
 }
 
 /** our main entry point */
-object Server extends com.github.aaronp.server.BaseApp(appDefaultService = Service()):
+object Server extends BaseApp(appDefaultService = Service()):
   start()

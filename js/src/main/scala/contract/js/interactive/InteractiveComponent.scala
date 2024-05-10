@@ -1,5 +1,5 @@
 package contract.js.interactive
-
+import support.*
 import contract.js.interactive.*
 import contract.js.interactive.ui.*
 import org.scalajs.dom

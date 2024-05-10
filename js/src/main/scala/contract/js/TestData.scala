@@ -8,6 +8,8 @@ import scalatags.JsDom.implicits.given
 
 import scala.concurrent.duration.{*, given}
 
+import support.*
+
 object TestData {
   val actors: List[Actor] = List(
     Actor.person("counterparty-A", "Alice"),
