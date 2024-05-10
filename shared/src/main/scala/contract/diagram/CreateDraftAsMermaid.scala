@@ -42,7 +42,7 @@ object CreateDraftAsMermaid {
           s"$CounterpartyB-->>$ContractService : $result"
         ).asState(result)
       case LogMessage(msg) =>
-        s"$ContractService->>$ContractService : log ${msg.take(18)}...".asState(())
+        s"$ContractService->>$ContractService : log ${msg.take(50)}...".asState(())
     }
 
   /** function which turns the request into a mermaid sequence diagram. see
