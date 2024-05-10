@@ -18,7 +18,7 @@ object LocalState {
   private def set(key: String, value: String)  = dom.window.localStorage.setItem(key, value)
 
   // TODO - this coupling kinda sucks. Move this to a single data registry
-  private val happyPath = Map("Happy Path Draft Contract" -> TestScenario.happyPathDraftContract)
+  private val happyPath = Map("Happy Path Restaurant" -> TestScenario.happyPathRestaurant)
 
   private def loadScenariosByName(): Map[String, TestScenario] = {
     try {

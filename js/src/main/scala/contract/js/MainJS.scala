@@ -1,6 +1,10 @@
 package contract.js
 
 import contract.model.*
+import support.*
+import contract.trade.restaurant.*
+import contract.trade.market.*
+import contract.trade.*
 import contract.diagram.*
 import contract.js.scenarios.*
 import contract.js.interactive.*
@@ -16,6 +20,8 @@ import scala.scalajs.js.JSON
 import scala.scalajs.js.annotation.JSExportTopLevel
 import upickle.default.*
 import scala.util.control.NonFatal
+import org.scalajs.dom.HTMLDivElement
+import contract.trade.restaurant.RestaurantDefaultLogic
 
 lazy val mermaidPage = {
   val page = MermaidPage()
@@ -33,23 +39,54 @@ lazy val mermaidPage = {
   page.element
 }
 
+def interactiveAsDraftContract(scenario: TestScenario): Option[HTMLDivElement] = {
+  try {
+    val request  = read[CreateContractRequest](scenario.input)
+    val messages = SvgInterpreter.messages(request)
+    // TODO - scale the config based on the div size
+    val config = ui.Config.default()
+    Option(InteractiveComponent(SvgInterpreter.actors, messages, config))
+
+  } catch {
+    case NonFatal(e) =>
+      None
+  }
+}
+
+def interactiveAsRestaurant(scenario: TestScenario): Option[HTMLDivElement] = {
+  try {
+    val request = read[OrderData](scenario.input)
+
+    given telemetry: Telemetry = Telemetry()
+    val result = RestaurantDefaultLogic.newRestaurant.placeOrder(request.asOrder).execOrThrow()
+    val calls: Seq[CompletedCall] = telemetry.calls.execOrThrow()
+    val messages                  = SvgForCalls(calls)
+    // TODO - scale the config based on the div size
+    val actors = calls.flatMap(c => Set(c.source, c.target))
+    val config = ui.Config.default()
+    Option(InteractiveComponent(actors, messages, config))
+
+  } catch {
+    case NonFatal(e) =>
+      None
+  }
+}
+
 lazy val interactivePage = {
-  val page = div().render
+  val page: HTMLDivElement = div().render
 
   EventBus.activeTestScenario.subscribe { scenario =>
-    try {
-      val request  = read[CreateContractRequest](scenario.input)
-      val messages = SvgInterpreter.messages(request)
-      // TODO - scale the config based on the div size
-      val config    = ui.Config.default()
-      val component = InteractiveComponent(SvgInterpreter.actors, messages, config)
-      page.innerHTML = ""
-      page.appendChild(component)
-    } catch {
-      case NonFatal(e) =>
-        page.innerHTML = ""
-        page.appendChild(div(s"We couldn't parse the scenario as a DraftContract: $e").render)
-    }
+    val tryOne = interactiveAsDraftContract(scenario)
+
+    val tryTwo = interactiveAsRestaurant(scenario)
+
+    val fallback = div(s"We couldn't parse the scenario as a DraftContract or Restaurant").render
+
+    val component = tryOne.orElse(tryTwo).getOrElse(fallback)
+
+    page.innerHTML = ""
+    page.appendChild(component)
+
   }
   page
 }

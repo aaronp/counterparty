@@ -4,7 +4,9 @@ import contract.*
 import contract.trade.*
 import support.{given, *}
 
-object RestaurantDefaultLogic extends RestaurantDefaultLogic
+object RestaurantDefaultLogic extends RestaurantDefaultLogic {
+  def newRestaurant(using telemetry: Telemetry) = Restaurant(defaultLogic)
+}
 
 trait RestaurantDefaultLogic {
 

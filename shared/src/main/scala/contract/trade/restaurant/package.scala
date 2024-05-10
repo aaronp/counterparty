@@ -1,7 +1,7 @@
 package contract.trade
 
 import contract.*
-
+import upickle.default.*
 package object restaurant {
 
   // we perhaps have an enum of ingredients (there are only so many things) which can be used to make food

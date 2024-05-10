@@ -8,20 +8,7 @@ class RestaurantTestData(using telemetry: Telemetry = Telemetry()) extends Resta
 
   val restaurant = Restaurant(defaultLogic)
 
-  val pancake = Dish(
-    Ingredient("milk"),
-    Ingredient("butter"),
-    Ingredient("flour"),
-    Ingredient("egg"),
-    Ingredient("egg"),
-    Ingredient("egg")
-  )
-
-  val fishAndChips = Dish(Ingredient("fish"), Ingredient("chips"))
-
-  val order = Order(List(pancake, fishAndChips))
-
-  lazy val result = restaurant.placeOrder(order).execOrThrow()
+  lazy val result = restaurant.placeOrder(OrderData.testOrder.asOrder).execOrThrow()
 
   def calls: Seq[CompletedCall] = telemetry.calls.execOrThrow()
 

@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter
 import concurrent.duration.*
 import java.time.{ZoneId, ZonedDateTime}
 
+import contract.trade.restaurant.*
 import contract.js.interactive.Json
 import upickle.default.{ReadWriter => RW, macroRW}
 import upickle.default.*
@@ -67,6 +68,13 @@ package object js {
         "Happy Path Draft Contract",
         "Just a BAU example",
         DraftContract.testData.asJson.asUJson
+      )
+
+    def happyPathRestaurant =
+      TestScenario(
+        "Happy Path Restaurant",
+        "Test Order",
+        OrderData.testOrder.asJson.asUJson
       )
   }
 

@@ -8,9 +8,7 @@ import support.*
 object SvgForCalls {
 
   def apply(calls: Seq[CompletedCall]): Seq[SendMessage] = {
-
-    ???
-    // calls.map { c => }
+    SendMessage.fromCalls(calls.sortBy(_.timestamp))
   }
 
 }
