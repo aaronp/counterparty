@@ -6,6 +6,7 @@ import contract.*
 import contract.trade.market.MarketplaceLogic.*
 import zio.ZIO
 import support.ActorType
+import support.*
 
 object MarketplaceTestLogic extends MarketplaceTestLogic
 

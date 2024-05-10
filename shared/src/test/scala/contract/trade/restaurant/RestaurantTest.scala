@@ -6,6 +6,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import contract.*
 import contract.trade.*
 import zio.*
+import support.*
 
 class RestaurantTest extends AnyWordSpec with Matchers {
 

@@ -3,6 +3,7 @@ package contract.example
 import contract.*
 
 import scala.util.Try
+import _root_.support.{given, *}
 
 object Example {
 

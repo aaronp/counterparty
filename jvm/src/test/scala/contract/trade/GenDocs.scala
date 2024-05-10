@@ -4,6 +4,8 @@ import contract.*
 import contract.trade.restaurant.{Order => ROrder, *}
 import contract.trade.market.*
 import eie.io.{given, *}
+import support.*
+
 import scala.language.implicitConversions
 
 case class Scenario(title: String, input: String, mermaid: String) {

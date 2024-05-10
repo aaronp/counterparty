@@ -1,6 +1,7 @@
 package contract
 
 import contract.model.*
+import support.{given, *}
 
 /** This trait is used to provide a generic 'Async' type for our enact contract logic.
   *

@@ -2,6 +2,7 @@ package contract
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import support.*
 
 class MinFPTest extends AnyWordSpec with Matchers {
 

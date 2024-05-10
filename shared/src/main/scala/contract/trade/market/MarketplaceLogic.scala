@@ -3,6 +3,7 @@ package contract.trade.market
 import contract.*
 import scala.compiletime.ops.string
 import scala.concurrent.duration.FiniteDuration
+import support.{given, *}
 
 opaque type Item = String
 extension (item: Item) {

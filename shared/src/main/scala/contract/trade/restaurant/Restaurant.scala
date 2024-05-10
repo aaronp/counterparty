@@ -3,7 +3,7 @@ package contract.trade.restaurant
 import contract.trade.*
 import zio.*
 import contract.*
-import contract.RunnableProgram
+import support.*
 
 trait Restaurant {
   def placeOrder(order: Order): Task[OrderId | OrderRejection]

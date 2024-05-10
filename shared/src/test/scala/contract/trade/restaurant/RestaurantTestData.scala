@@ -1,6 +1,7 @@
 package contract.trade.restaurant
 
 import contract.*
+import support.*
 import contract.trade.*
 
 class RestaurantTestData(using telemetry: Telemetry = Telemetry()) extends RestaurantDefaultLogic {

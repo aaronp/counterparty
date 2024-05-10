@@ -11,7 +11,7 @@ import contract.CreateDraftLogic.{
 
 import contract.{Contract, CounterpartyRef, CreateDraftLogic, DraftContract, DraftContractId}
 import contract.CreateDraftLogic.*
-import contract.~>
+import support.~>
 import zio.*
 
 import scala.annotation.targetName

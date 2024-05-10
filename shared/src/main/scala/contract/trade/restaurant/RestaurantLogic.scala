@@ -1,6 +1,7 @@
 package contract.trade.restaurant
 
 import contract.*
+import support.{given, *}
 
 enum RestaurantLogic[A]:
   case GetStrategy                                  extends RestaurantLogic[Strategy]

@@ -4,6 +4,7 @@ import contract.*
 import contract.model.*
 
 import scala.annotation.targetName
+import support.{~>, State}
 
 object EnactContractAsMermaid extends EnactContract {
 

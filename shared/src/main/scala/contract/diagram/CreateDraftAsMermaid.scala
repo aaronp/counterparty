@@ -6,7 +6,8 @@ import contract.CreateDraftLogic.{
   NotifyCounterpartyB,
   StoreDraftInDatabase
 }
-import contract.{CounterpartyRef, CreateDraftLogic, DraftContract, DraftContractId, State, ~>}
+import contract.{CounterpartyRef, CreateDraftLogic, DraftContract, DraftContractId}
+import support.{State, ~>}
 
 import scala.annotation.targetName
 

@@ -2,10 +2,12 @@ package contract.trade.market
 
 import zio.*
 import contract.*
-import contract.RunnableProgram
+import support.RunnableProgram
 
 import concurrent.duration.*
 import scala.reflect.ClassTag
+import support.Telemetry
+import support.Result
 
 trait Marketplace:
   def placeOrder(order: Order): Task[OrderId | OutOfStockResponse]

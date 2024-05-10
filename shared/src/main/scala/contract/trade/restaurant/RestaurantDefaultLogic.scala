@@ -2,6 +2,7 @@ package contract.trade.restaurant
 
 import contract.*
 import contract.trade.*
+import support.{given, *}
 
 object RestaurantDefaultLogic extends RestaurantDefaultLogic
 

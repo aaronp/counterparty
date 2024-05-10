@@ -6,6 +6,7 @@ import _root_.contract.*
 import java.util.EventListener
 import CreateDraftLogic.*
 import support.*
+import support.{Semigroup, State}
 
 package object interactive {
 

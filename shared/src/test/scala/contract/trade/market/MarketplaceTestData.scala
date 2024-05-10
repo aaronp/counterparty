@@ -1,6 +1,8 @@
 package contract.trade.market
 
 import contract.*
+import support.*
+
 import contract.trade.*
 import contract.trade.market.MarketplaceLogic.*
 import scala.concurrent.duration.*

@@ -1,6 +1,7 @@
 package contract
 
 import contract.model.*
+import support.{given, *}
 
 /** An 'DraftOperation' represent the actions (and the inputs/outputs) the business logic will need
   * in order to interact with the outside world (users, databases, other services)

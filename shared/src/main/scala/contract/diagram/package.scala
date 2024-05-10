@@ -1,4 +1,5 @@
 package contract
+import support.State
 
 package object diagram {
 
@@ -11,7 +12,8 @@ package object diagram {
   type MermaidInstruction = String
   extension (calls: List[MermaidInstruction])
     // note: the 'reverse' is because we'll ultimately have to reverse the whole stack as we're prepending instructions
-    def asState[A](result: A): State[Calls, A] = State.combine[Calls, A](calls.reverse, result)
+    def asState[A](result: A): State[Calls, A] =
+      support.State.combine[Calls, A](calls.reverse, result)
   extension (call: MermaidInstruction)
     def asState[A](result: A): State[Calls, A] = List(call).asState(result)
 

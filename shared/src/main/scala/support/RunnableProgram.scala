@@ -1,4 +1,4 @@
-package contract
+package support
 
 import zio.*
 import contract.*
@@ -6,6 +6,8 @@ import contract.trade.market.MarketplaceLogic
 
 import scala.annotation.targetName
 import scala.reflect.ClassTag
+import support.Telemetry
+import support.{Program, ~>, Result, traceTask}
 
 /** This trait is a kind of convenience wrapper around our 'Program' ADT, providing the common (but
   * perhaps unfamiliar or confusing) 'foldMap' machinery we need to execute our program.

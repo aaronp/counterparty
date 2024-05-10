@@ -1,6 +1,8 @@
 package contract.js.interactive
 
-import contract.{CompletedCall, CreateDraftLogic, DraftContract, State}
+import contract.{CreateDraftLogic, DraftContract}
+import support.CompletedCall
+import support.State
 import support.*
 
 object SvgForCalls {

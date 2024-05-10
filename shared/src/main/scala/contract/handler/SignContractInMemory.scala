@@ -4,6 +4,7 @@ import contract.*
 import zio.{Fiber, Task, ZIO}
 
 import scala.annotation.targetName
+import support.~>
 
 trait SignContractHandler extends EnactContract {
 

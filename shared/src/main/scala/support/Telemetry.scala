@@ -1,4 +1,4 @@
-package contract
+package support
 
 import contract.*
 import zio.*
