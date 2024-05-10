@@ -118,78 +118,8 @@ object Telemetry {
     * @return
     *   a sequence of mermaid statements
     */
-  private def asMermaidStatements(
-      sortedCalls: Seq[CompletedCall],
-      sortedCompleted: Seq[CompletedCall] = Vector(),
-      mermaidBuffer: Seq[String] = Vector()
-  ): Seq[String] = {
-
-    def truncate(owt: Any, len: Int = 85) =
-      val opString = owt.toString
-      if opString.length > len then opString.take(len - 3) + "..." else opString
-
-    def selfCall(call: CompletedCall) =
-      s"${call.source} ->> ${call.target} : ${truncate(call.operation)} ${truncate(commentForResult(call), 30)}"
-
-    def startCall(call: CompletedCall, arrow: String) =
-      s"${call.source} $arrow ${call.target} : ${truncate(call.operation)}"
-
-    def commentForResult(call: CompletedCall) = call.response match {
-      case CallResponse.NotCompleted         => "never completed"
-      case CallResponse.Error(_, error)      => s"Errored with '$error'"
-      case CallResponse.Completed(_, result) => s"Returned '$result'"
-    }
-
-    def endCall(call: CompletedCall, arrow: String) = call.response match {
-      case CallResponse.NotCompleted => None
-      case CallResponse.Error(_, error) =>
-        Some(s"${call.target} $arrow ${call.source} : ${commentForResult(call)}")
-      case CallResponse.Completed(_, result) =>
-        Some(s"${call.target} $arrow ${call.source} : ${commentForResult(call)}")
-    }
-
-    // NOTE - this is technically inefficient, but we're talking about lists of 2 or 3 items
-    def appendInProgress(call: CompletedCall) =
-      (call +: sortedCompleted).sortBy(_.endTimestamp.getOrElse(-1L))
-
-    (sortedCalls, sortedCompleted) match {
-      case (Seq(), Seq()) => mermaidBuffer
-      case (Seq(), nextCompleted +: theRestCompleted) =>
-        asMermaidStatements(
-          Seq(),
-          theRestCompleted,
-          mermaidBuffer :++ endCall(nextCompleted, "-->>-")
-        )
-      case (Seq(nextCall), Seq()) =>
-        mermaidBuffer :+ startCall(nextCall, "->>")
-      // the case when our next completion ends before or at the same time as the next call:
-      case (nextCall +: theRestCalls, inProgress +: theRestInProgress)
-          if inProgress.endTimestamp.exists(_ <= nextCall.timestamp) =>
-        asMermaidStatements(
-          nextCall +: theRestCalls,
-          theRestInProgress,
-          mermaidBuffer :++ endCall(inProgress, "-->>-")
-        )
-      // the case when our next call doesn't complete until after the subsequent call:
-      case (callA +: callB +: theRestCalls, _) if callA.endTimestamp.exists(_ > callB.timestamp) =>
-        asMermaidStatements(
-          callB +: theRestCalls,
-          appendInProgress(callA),
-          mermaidBuffer :+ startCall(callA, "->>+")
-        )
-      // the typical synchronous call case
-      case (callA +: theRestCalls, theRestInProgress) =>
-        val calls = if callA.source == callA.target then {
-          selfCall(callA) :: Nil
-        } else {
-          startCall(callA, "->>") +: endCall(callA, "-->>").toSeq
-        }
-        asMermaidStatements(
-          theRestCalls,
-          theRestInProgress,
-          mermaidBuffer :++ calls
-        )
-    }
+  private def asMermaidStatements(sortedCalls: Seq[CompletedCall]): Seq[String] = {
+    SendMessage.fromCalls(sortedCalls).map(_.asMermaidString())
   }
 }
 

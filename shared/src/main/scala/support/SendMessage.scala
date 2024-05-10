@@ -23,6 +23,14 @@ case class SendMessage(
     case json: ujson.Value => json.render(2)
     case other             => other.toString()
   }
+
+  private def truncate(owt: Any, len: Int = 85) =
+    val opString = owt.toString
+    if opString.length > len then opString.take(len - 3) + "..." else opString
+
+  def asMermaidString(maxLenComment: Int = 20) = {
+    s"${from} $arrow ${to} : ${truncate(messageFormatted, maxLenComment)} ${truncate(comment, 30)}"
+  }
 }
 
 object SendMessage {
@@ -60,10 +68,6 @@ object SendMessage {
       sortedCompleted: Seq[CompletedCall] = Vector(),
       buffer: Seq[SendMessage] = Vector()
   ): Seq[SendMessage] = {
-
-    def truncate(owt: Any, len: Int = 85) =
-      val opString = owt.toString
-      if opString.length > len then opString.take(len - 3) + "..." else opString
 
     def selfCall(call: CompletedCall): SendMessage = {
       SendMessage(
